@@ -266,9 +266,11 @@ textarea.input:focus { border-color: var(--color-gold); }
 .theme-toggle:hover { color: var(--color-gold); border-color: color-mix(in srgb, var(--color-gold) 60%, transparent); }
 
 /* Hamburger */
-.museum-hamburger {
-  display: flex; flex-direction: column; gap: 5px;
-  background: none; border: none; cursor: pointer; padding: 4px;
+@layer components {
+  .museum-hamburger {
+    display: flex; flex-direction: column; gap: 5px;
+    background: none; border: none; cursor: pointer; padding: 4px;
+  }
 }
 .museum-hamburger span {
   display: block; width: 26px; height: 2px;
@@ -281,18 +283,20 @@ textarea.input:focus { border-color: var(--color-gold); }
 .museum-hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 /* Mobile panel */
-.museum-mobile-nav {
-  position: fixed; top: 0; right: -100%;
-  width: 280px; height: 100vh;
-  background: color-mix(in srgb, var(--color-ink) 97%, transparent);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  display: flex; flex-direction: column;
-  justify-content: center; align-items: center;
-  z-index: 49;
-  transition: right 0.4s ease;
+@layer components {
+  .museum-mobile-nav {
+    position: fixed; top: 0; right: -100%;
+    width: 280px; height: 100vh;
+    background: color-mix(in srgb, var(--color-ink) 97%, transparent);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    z-index: 49;
+    transition: right 0.4s ease;
+  }
 }
 .museum-mobile-nav.open { right: 0; }
-.museum-mobile-nav .museum-nav-link { font-size: 1.05rem; }
+.museum-mobile-nav.museum-nav-link { font-size: 1.05rem; }
 
 @media (max-width: 767px) {
   .museum-nav { padding-left: 1.5rem; padding-right: 1.5rem; }

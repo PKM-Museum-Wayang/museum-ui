@@ -74,7 +74,7 @@ export default function Navigation() {
           </ul>
 
           {/* Mobile hamburger */}
-          {/* <button
+          <button
             className={`museum-hamburger md:hidden${mobileOpen ? ' active' : ''}`}
             aria-label="Buka menu"
             onClick={() => setMobileOpen(v => !v)}
@@ -82,7 +82,7 @@ export default function Navigation() {
             <span />
             <span />
             <span />
-          </button> */}
+          </button>
         </div>
       </nav>
 
