@@ -29,7 +29,7 @@ export default function KoleksiDetail() {
   return (
     <>
       {/* ── BREADCRUMB ── */}
-      <div className="px-8 md:px-20 pt-32 md:pt-36 pb-6 text-[11px] uppercase tracking-[0.3em] text-cream/45 flex gap-3 items-center flex-wrap">
+      <div className="px-8 md:px-20 pt-32 md:pt-36 pb-6 text-[11px] uppercase tracking-[0.15em] text-cream/45 flex gap-3 items-center flex-wrap">
         <Link to="/koleksi" className="hover:text-gold transition-colors">Koleksi</Link>
         <span className="text-gold/40">/</span>
         <Link to={`/koleksi?jenis=${koleksi.jenis}`} className="hover:text-gold transition-colors">{koleksi.jenis}</Link>
@@ -47,15 +47,10 @@ export default function KoleksiDetail() {
 
           {/* Info */}
           <div className="md:col-span-5 reveal" style={{ ['--rd' as string]: '200ms' }}>
-            <div className="flex justify-between items-start">
-              <span className="eyebrow">— Koleksi № {String(koleksi.id).padStart(3, '0')}</span>
-              <span className="font-mono text-[10px] text-cream/40">
-                USD-WK-{String(koleksi.id).padStart(3, '0')}
-              </span>
-            </div>
+            <span className="eyebrow">Detail Koleksi</span>
 
-            <h1 className="font-display text-[clamp(56px,8vw,108px)] text-cream leading-[0.95] mt-6">
-              {koleksi.nama}.
+            <h1 className="font-display text-[clamp(40px,6vw,72px)] text-cream leading-[1.05] mt-4">
+              {koleksi.nama}
             </h1>
             <p className="font-display italic text-2xl text-gold mt-3">{koleksi.jenis}</p>
 
@@ -64,16 +59,16 @@ export default function KoleksiDetail() {
             {/* Specs */}
             <dl className="mt-12 space-y-5">
               <div className="grid grid-cols-3 border-t hairline pt-4">
-                <dt className="text-[10px] uppercase tracking-[0.3em] text-gold/70">Jenis</dt>
+                <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">Jenis</dt>
                 <dd className="col-span-2 text-cream/85">{koleksi.jenis}</dd>
               </div>
               <div className="grid grid-cols-3 border-t hairline pt-4">
-                <dt className="text-[10px] uppercase tracking-[0.3em] text-gold/70">Bahan</dt>
+                <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">Bahan</dt>
                 <dd className="col-span-2 text-cream/85">{koleksi.bahan}</dd>
               </div>
               <div className="grid grid-cols-3 border-t hairline pt-4">
-                <dt className="text-[10px] uppercase tracking-[0.3em] text-gold/70">Nomor</dt>
-                <dd className="col-span-2 text-cream/85">USD-WK-{String(koleksi.id).padStart(3, '0')}</dd>
+                <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">No. Inventaris</dt>
+                <dd className="col-span-2 text-cream/85">{koleksi.id}</dd>
               </div>
             </dl>
 
@@ -91,9 +86,9 @@ export default function KoleksiDetail() {
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12 reveal">
               <div>
-                <span className="eyebrow">— Koleksi Terkait</span>
-                <h2 className="font-display text-cream text-[clamp(32px,4vw,56px)] mt-3">
-                  {koleksi.jenis} <em className="not-italic text-gold">Lainnya</em>
+                <span className="eyebrow">Koleksi Terkait</span>
+                <h2 className="font-display text-cream text-[clamp(28px,3.5vw,44px)] mt-3">
+                  {koleksi.jenis} Lainnya
                 </h2>
               </div>
               <Link to={`/koleksi?jenis=${koleksi.jenis}`} className="arrow-link">
@@ -109,14 +104,9 @@ export default function KoleksiDetail() {
                   className="lift border hairline p-3 block group"
                 >
                   <div className="placeholder aspect-[3/4]">{r.nama.toUpperCase()}</div>
-                  <div className="flex justify-between items-baseline mt-4 px-1">
-                    <div>
-                      <h4 className="font-display text-xl group-hover:text-gold transition-colors">{r.nama}</h4>
-                      <p className="text-[10px] uppercase tracking-[0.3em] text-cream/45 mt-1">{r.jenis}</p>
-                    </div>
-                    <span className="font-mono text-[10px] text-gold/60">
-                      № {String(r.id).padStart(3, '0')}
-                    </span>
+                  <div className="mt-4 px-1">
+                    <h4 className="font-display text-xl group-hover:text-gold transition-colors">{r.nama}</h4>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-cream/45 mt-1">{r.jenis}</p>
                   </div>
                 </Link>
               ))}

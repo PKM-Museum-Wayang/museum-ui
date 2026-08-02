@@ -8,8 +8,8 @@ export default function Footer({ variant = 'full' }: FooterProps) {
   if (variant === 'minimal') {
     return (
       <footer className="border-t hairline px-8 md:px-20 py-12">
-        <div className="max-w-7xl mx-auto flex justify-between text-[10px] uppercase tracking-[0.3em] text-cream/40">
-          <span>© MMXXVI · Museum Wayang USD</span>
+        <div className="max-w-7xl mx-auto flex justify-between text-[10px] uppercase tracking-[0.15em] text-cream/40">
+          <span>© 2026 Museum Wayang USD</span>
           <Link to="/kontak" className="hover:text-gold transition-colors">Hubungi Kami</Link>
         </div>
       </footer>
@@ -50,9 +50,9 @@ export default function Footer({ variant = 'full' }: FooterProps) {
           </p>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t hairline flex flex-col md:flex-row justify-between text-[10px] uppercase tracking-[0.3em] text-cream/40 gap-3">
-        <span>© MMXXVI · Museum Wayang USD</span>
-        <span>Dirancang untuk warisan, dengan kehormatan.</span>
+      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t hairline flex flex-col md:flex-row justify-between text-[10px] uppercase tracking-[0.15em] text-cream/40 gap-3">
+        <span>© 2026 Museum Wayang USD</span>
+        <span>Dikembangkan oleh tim PKM Universitas Sanata Dharma</span>
       </div>
     </footer>
   )

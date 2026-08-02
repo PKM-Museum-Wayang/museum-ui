@@ -6,10 +6,11 @@ import KoleksiDetail from './pages/KoleksiDetail'
 import Kegiatan from './pages/Kegiatan'
 import About from './pages/About'
 import Kontak from './pages/Kontak'
+import Login from './admin/Login'
 import AdminLayout from './admin/AdminLayout'
 import AdminDashboard from './admin/AdminDashboard'
-import KoleksiCreate from './admin/KoleksiCreate'
-import KoleksiEdit from './admin/KoleksiEdit'
+import WayangCreate from './admin/WayangCreate'
+import WayangEdit from './admin/WayangEdit'
 
 export default function App() {
   return (
@@ -25,11 +26,15 @@ export default function App() {
           <Route path="/kontak" element={<Kontak />} />
         </Route>
 
-        {/* ── Admin ── */}
+        {/* ── Admin login (tanpa sidebar) ── */}
+        <Route path="/admin/login" element={<Login />} />
+
+        {/* ── Admin dashboard ── */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="koleksi/create" element={<KoleksiCreate />} />
-          <Route path="koleksi/:id/edit" element={<KoleksiEdit />} />
+          <Route path="wayang/create" element={<WayangCreate />} />
+          <Route path="wayang/:id/edit" element={<WayangEdit />} />
+          <Route path="cerita" element={<AdminDashboard />} />
         </Route>
       </Routes>
     </BrowserRouter>

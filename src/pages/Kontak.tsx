@@ -34,14 +34,14 @@ export default function Kontak() {
       {/* ── HEADER ── */}
       <section className="pt-32 md:pt-44 pb-16 px-8 md:px-20 border-b hairline">
         <div className="max-w-7xl mx-auto">
-          <span className="eyebrow reveal">— V · Kontak</span>
-          <h1 className="reveal font-display text-[clamp(56px,10vw,148px)] leading-[0.95] mt-6 text-cream" style={{ ['--rd' as string]: '100ms' }}>
-            Mari, <em className="not-italic text-gold">berbicara.</em>
+          <span className="eyebrow reveal">Kontak</span>
+          <h1 className="reveal font-display text-[clamp(40px,6vw,72px)] leading-[1.05] mt-4 text-cream" style={{ ['--rd' as string]: '100ms' }}>
+            Hubungi Kami
           </h1>
-          <p className="reveal mt-10 max-w-xl text-cream/65 leading-[1.85]" style={{ ['--rd' as string]: '250ms' }}>
-            Tertarik berkunjung, melakukan penelitian, atau mengundang
-            kami untuk pertunjukan? Kirim pesan — kami biasanya membalas
-            dalam dua hari kerja.
+          <p className="reveal mt-6 max-w-xl text-cream/65 leading-[1.85]" style={{ ['--rd' as string]: '250ms' }}>
+            Ingin berkunjung, meneliti koleksi, atau meminjam wayang untuk
+            pentas? Kirim pesan lewat formulir di bawah, atau hubungi
+            langsung melalui kontak yang tersedia.
           </p>
         </div>
       </section>
@@ -52,8 +52,8 @@ export default function Kontak() {
 
           {/* LEFT: form */}
           <div className="md:col-span-7 reveal">
-            <span className="eyebrow">— Kirim Pesan</span>
-            <h2 className="font-display text-cream text-[clamp(32px,4vw,52px)] mt-3">Tulis kepada kami.</h2>
+            <span className="eyebrow">Formulir</span>
+            <h2 className="font-display text-cream text-[clamp(28px,3.5vw,44px)] mt-3">Kirim Pesan</h2>
 
             {sent ? (
               <div className="mt-12 border hairline p-10 text-center">
@@ -110,7 +110,7 @@ export default function Kontak() {
 
           {/* RIGHT: info */}
           <aside className="md:col-span-5 reveal" style={{ ['--rd' as string]: '200ms' }}>
-            <span className="eyebrow">— Pemilik Museum</span>
+            <span className="eyebrow">Pemilik Museum</span>
 
             <div className="mt-6 border hairline p-8">
               <div className="placeholder w-24 aspect-square text-[8px]">FOTO</div>
@@ -118,18 +118,18 @@ export default function Kontak() {
               <p className="font-display italic text-gold mt-1">Pemilik Wayang</p>
               <dl className="mt-8 space-y-4 text-[14px]">
                 <div className="border-t hairline pt-4">
-                  <dt className="text-[10px] uppercase tracking-[0.3em] text-gold/70">Surel Pribadi</dt>
+                  <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">Surel Pribadi</dt>
                   <dd className="text-cream/85 mt-2">Sutarwinarno@usd.ac.id</dd>
                 </div>
                 <div className="border-t hairline pt-4">
-                  <dt className="text-[10px] uppercase tracking-[0.3em] text-gold/70">WhatsApp</dt>
+                  <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">WhatsApp</dt>
                   <dd className="text-cream/85 mt-2">+62 812 2700 0001</dd>
                 </div>
               </dl>
             </div>
 
             <div className="mt-12">
-              <span className="eyebrow">— Saluran Resmi</span>
+              <span className="eyebrow">Saluran Resmi</span>
               <dl className="mt-6 space-y-5 text-[14px]">
                 {[
                   { label: 'Surel', val: 'museum.wayang@usd.ac.id' },
@@ -138,7 +138,7 @@ export default function Kontak() {
                   { label: 'Jam Buka', val: 'Senin — Jumat · 09.00 — 14.00\nAkhir pekan dengan janji temu' },
                 ].map(({ label, val }) => (
                   <div key={label} className="border-t hairline pt-4 grid grid-cols-3">
-                    <dt className="text-[10px] uppercase tracking-[0.3em] text-gold/70">{label}</dt>
+                    <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">{label}</dt>
                     <dd className="col-span-2 text-cream/85 leading-relaxed whitespace-pre-line">{val}</dd>
                   </div>
                 ))}
@@ -146,7 +146,7 @@ export default function Kontak() {
             </div>
 
             <div className="mt-12 border-t hairline pt-8">
-              <span className="eyebrow">— Sosial</span>
+              <span className="eyebrow">Sosial</span>
               <div className="mt-4 flex flex-col gap-2 text-cream/85">
                 {[
                   { handle: '@museumwayang.usd', platform: 'Instagram' },
@@ -169,8 +169,8 @@ export default function Kontak() {
       </section>
 
       <footer className="border-t hairline px-8 md:px-20 py-12">
-        <div className="max-w-7xl mx-auto flex justify-between text-[10px] uppercase tracking-[0.3em] text-cream/40">
-          <span>© MMXXVI · Museum Wayang USD</span>
+        <div className="max-w-7xl mx-auto flex justify-between text-[10px] uppercase tracking-[0.15em] text-cream/40">
+          <span>© 2026 Museum Wayang USD</span>
           <Link to="/" className="hover:text-gold transition-colors">← Kembali ke beranda</Link>
         </div>
       </footer>

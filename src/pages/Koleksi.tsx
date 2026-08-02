@@ -42,31 +42,16 @@ export default function Koleksi() {
     <>
       {/* ── PAGE HERO ── */}
       <section className="page-hero px-8 md:px-20">
-        <div className="absolute top-32 right-20 ornament-cross hidden md:block" />
-        <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-10 items-end">
-          <div className="md:col-span-7 reveal">
-            <h1 className="font-display text-gold text-[clamp(56px,8vw,120px)] leading-[0.95] mt-5">
-              Koleksi <em className="not-italic text-cream">Wayang.</em>
+        <div className="max-w-7xl mx-auto">
+          <div className="max-w-2xl reveal">
+            <h1 className="font-display text-cream text-[clamp(40px,6vw,72px)] leading-[1.05] mt-5">
+              Koleksi Wayang
             </h1>
-            <p className="mt-8 max-w-xl text-cream/65 leading-[1.85]">
-              Setiap tokoh dipahat dari kulit kerbau pilihan, diwarnai dengan
-              tinta alam, dan disungging hingga tembus cahaya. Telusuri ribuan
-              karakter yang membentuk semesta cerita pewayangan Nusantara.
+            <p className="mt-6 max-w-xl text-cream/65 leading-[1.85]">
+              Koleksi wayang milik Bapak Sutarwinarno yang tersimpan dalam
+              sembilan kotak penyimpanan. Telusuri tokoh-tokohnya dan baca
+              cerita di balik setiap wayang.
             </p>
-          </div>
-          <div className="md:col-span-5 reveal" style={{ ['--rd' as string]: '200ms' }}>
-            <div className="grid grid-cols-3 border-t border-b hairline divide-x divide-[rgba(201,163,90,0.18)]">
-              {[
-                { num: '10K+', label: 'Koleksi' },
-                { num: '14', label: 'Daerah Asal' },
-                { num: 'VI', label: 'Kategori' },
-              ].map(({ num, label }) => (
-                <div key={label} className="px-5 py-6 text-center">
-                  <p className="font-display text-3xl text-gold number-tabular">{num}</p>
-                  <p className="text-[9px] uppercase tracking-[0.3em] text-cream/45 mt-2">{label}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
@@ -74,7 +59,7 @@ export default function Koleksi() {
       {/* ── FILTER BAR ── */}
       <section className="px-8 md:px-20 py-12 border-b hairline">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <ul className="flex flex-wrap items-center gap-x-8 gap-y-3 text-[11px] uppercase tracking-[0.3em] list-none m-0 p-0">
+          <ul className="flex flex-wrap items-center gap-x-8 gap-y-3 text-[11px] uppercase tracking-[0.15em] list-none m-0 p-0">
             <li>
               <button
                 className={`${!activeJenis ? 'text-gold border-b border-gold pb-1' : 'text-cream/55 hover:text-gold transition-colors'}`}
@@ -115,8 +100,8 @@ export default function Koleksi() {
       <section className="px-8 md:px-20 py-20">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline justify-between mb-10">
-            <p className="eyebrow">Plate I — Tokoh Pilihan</p>
-            <p className="font-mono text-[10px] text-cream/45 uppercase tracking-[0.3em]">
+            <p className="eyebrow">Daftar Koleksi</p>
+            <p className="font-mono text-[10px] text-cream/45 uppercase tracking-[0.15em]">
               {filtered.length} koleksi
             </p>
           </div>
@@ -126,7 +111,7 @@ export default function Koleksi() {
               <p className="font-display text-2xl text-cream/40">Koleksi tidak ditemukan.</p>
               <button
                 onClick={() => { setSearch(''); setActiveJenis('') }}
-                className="mt-6 inline-block text-[11px] uppercase tracking-[0.3em] text-gold hover:underline"
+                className="mt-6 inline-block text-[11px] uppercase tracking-[0.15em] text-gold hover:underline"
               >
                 Lihat semua koleksi
               </button>
@@ -151,14 +136,9 @@ export default function Koleksi() {
                   ) : (
                     <div className="placeholder aspect-[3/4]">{k.nama.toUpperCase()}</div>
                   )}
-                  <div className="flex justify-between items-baseline mt-4 px-1">
-                    <div>
-                      <h4 className="font-display text-xl text-cream group-hover:text-gold transition-colors">{k.nama}</h4>
-                      <p className="text-[10px] uppercase tracking-[0.3em] text-cream/45 mt-1">{k.jenis}</p>
-                    </div>
-                    <span className="font-mono text-[10px] text-gold/60">
-                      № {String(k.id).padStart(3, '0')}
-                    </span>
+                  <div className="mt-4 px-1">
+                    <h4 className="font-display text-xl text-cream group-hover:text-gold transition-colors">{k.nama}</h4>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-cream/45 mt-1">{k.jenis}</p>
                   </div>
                 </Link>
               ))}

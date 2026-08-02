@@ -1,5 +1,6 @@
-import { useState, type FormEvent, type ChangeEvent } from 'react'
+import { useState, useRef, type ChangeEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import api from '../lib/api'
 
 const JENIS_LIST = ['Solo', 'Yogyakarta', 'Lainnya']
 const BAHAN_LIST = ['Batu', 'Perunggu', 'Tanah Liat', 'Kayu', 'Logam', 'Lainnya']
@@ -9,6 +10,8 @@ export default function KoleksiCreate() {
   const [form, setForm] = useState({ nama: '', jenis: '', bahan: '', deskripsi: '' })
   const [fileName, setFileName] = useState('')
   const [errors, setErrors] = useState<Partial<typeof form>>({})
+  const [submitting, setSubmitting] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const set = (field: keyof typeof form) =>
     (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
@@ -28,12 +31,25 @@ export default function KoleksiCreate() {
     return Object.keys(err).length === 0
   }
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: { preventDefault(): void }) => {
     e.preventDefault()
     if (!validate()) return
-    /* TODO: POST ke API backend */
-    console.log('Create:', form)
-    navigate('/admin/dashboard')
+
+    const body = new FormData()
+    Object.entries(form).forEach(([k, v]) => body.append(k, v))
+    if (fileRef.current?.files?.[0]) body.append('gambar', fileRef.current.files[0])
+
+    try {
+      setSubmitting(true)
+      await api.post('/admin/koleksi', body, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      navigate('/admin/dashboard')
+    } catch {
+      setErrors(prev => ({ ...prev, nama: 'Gagal menyimpan. Coba lagi.' }))
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -109,7 +125,7 @@ export default function KoleksiCreate() {
                   <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
                 Pilih Gambar
-                <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
               </label>
               {fileName && <span className="text-slate-500 text-sm">{fileName}</span>}
             </div>
@@ -119,9 +135,10 @@ export default function KoleksiCreate() {
           <div className="flex gap-3 mt-8">
             <button
               type="submit"
-              className="px-6 py-[0.65rem] bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg cursor-pointer border-none transition-colors"
+              disabled={submitting}
+              className="px-6 py-[0.65rem] bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white text-sm font-medium rounded-lg cursor-pointer border-none transition-colors"
             >
-              Simpan
+              {submitting ? 'Menyimpan…' : 'Simpan'}
             </button>
             <Link
               to="/admin/dashboard"

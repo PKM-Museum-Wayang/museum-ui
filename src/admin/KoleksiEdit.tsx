@@ -1,40 +1,41 @@
-import { useState, type FormEvent, type ChangeEvent } from 'react'
+import { useState, useRef, useEffect, type ChangeEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import api from '../lib/api'
 
 const JENIS_LIST = ['Solo', 'Yogyakarta', 'Lainnya']
 const BAHAN_LIST = ['Batu', 'Perunggu', 'Tanah Liat', 'Kayu', 'Logam', 'Lainnya']
 
-/* Mock data — ganti dengan fetch ke API saat backend siap */
-const MOCK_KOLEKSI = [
-  { id: 1, nama: 'Arjuna', jenis: 'Solo', bahan: 'Kulit Kerbau', deskripsi: 'Ksatria Pandawa paling sakti.' },
-  { id: 2, nama: 'Bima', jenis: 'Solo', bahan: 'Kulit Kerbau', deskripsi: 'Putera kedua Pandawa Lima.' },
-  { id: 3, nama: 'Kresna', jenis: 'Yogyakarta', bahan: 'Kulit Kerbau', deskripsi: 'Awatara Wisnu dan penasihat Pandawa.' },
-  { id: 4, nama: 'Srikandi', jenis: 'Yogyakarta', bahan: 'Kulit Kerbau', deskripsi: 'Prajurit wanita yang pandai memanah.' },
-  { id: 5, nama: 'Gatotkaca', jenis: 'Solo', bahan: 'Kulit Kerbau', deskripsi: 'Putra Bima, otot kawat tulang besi.' },
-]
+interface KoleksiData {
+  id: number
+  nama: string
+  jenis: string
+  bahan: string
+  deskripsi: string
+  gambar?: string
+}
 
 export default function KoleksiEdit() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const koleksi = MOCK_KOLEKSI.find(k => k.id === Number(id))
+  const fileRef = useRef<HTMLInputElement>(null)
 
-  const [form, setForm] = useState({
-    nama: koleksi?.nama ?? '',
-    jenis: koleksi?.jenis ?? '',
-    bahan: koleksi?.bahan ?? '',
-    deskripsi: koleksi?.deskripsi ?? '',
-  })
+  const [form, setForm] = useState({ nama: '', jenis: '', bahan: '', deskripsi: '' })
+  const [currentGambar, setCurrentGambar] = useState<string | undefined>()
   const [fileName, setFileName] = useState('')
   const [errors, setErrors] = useState<Partial<typeof form>>({})
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
 
-  if (!koleksi) {
-    return (
-      <div className="text-center py-20 text-slate-400">
-        <p className="text-lg">Koleksi tidak ditemukan.</p>
-        <Link to="/admin/dashboard" className="inline-block mt-4 text-blue-500 hover:underline">← Kembali</Link>
-      </div>
-    )
-  }
+  useEffect(() => {
+    api.get<{ data: KoleksiData }>(`/admin/koleksi/${id}`)
+      .then(res => {
+        const k = res.data.data
+        setForm({ nama: k.nama, jenis: k.jenis, bahan: k.bahan, deskripsi: k.deskripsi })
+        setCurrentGambar(k.gambar)
+      })
+      .catch(() => setErrors({ nama: 'Gagal memuat data koleksi.' }))
+      .finally(() => setLoading(false))
+  }, [id])
 
   const set = (field: keyof typeof form) =>
     (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
@@ -54,12 +55,30 @@ export default function KoleksiEdit() {
     return Object.keys(err).length === 0
   }
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: { preventDefault(): void }) => {
     e.preventDefault()
     if (!validate()) return
-    /* TODO: PUT ke API backend */
-    console.log('Update id', id, form)
-    navigate('/admin/dashboard')
+
+    const body = new FormData()
+    Object.entries(form).forEach(([k, v]) => body.append(k, v))
+    body.append('_method', 'PUT')
+    if (fileRef.current?.files?.[0]) body.append('gambar', fileRef.current.files[0])
+
+    try {
+      setSubmitting(true)
+      await api.post(`/admin/koleksi/${id}`, body, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      navigate('/admin/dashboard')
+    } catch {
+      setErrors(prev => ({ ...prev, nama: 'Gagal menyimpan. Coba lagi.' }))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (loading) {
+    return <div className="py-20 text-center text-slate-400">Memuat data…</div>
   }
 
   return (
@@ -127,9 +146,13 @@ export default function KoleksiEdit() {
           {/* Gambar */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-slate-700 mb-2">Gambar</label>
-            {koleksi.gambar && (
+            {currentGambar && (
               <>
-                <img src={koleksi.gambar} alt={koleksi.nama} className="w-[120px] h-[120px] object-cover rounded-lg mb-2 bg-slate-100 block" />
+                <img
+                  src={`${import.meta.env.VITE_API_URL?.replace('/api', '')}/storage/${currentGambar}`}
+                  alt="Gambar saat ini"
+                  className="w-[120px] h-[120px] object-cover rounded-lg mb-2 bg-slate-100 block"
+                />
                 <p className="text-slate-400 text-xs mb-2">Upload gambar baru untuk mengganti</p>
               </>
             )}
@@ -141,7 +164,7 @@ export default function KoleksiEdit() {
                   <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
                 Pilih Gambar
-                <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
               </label>
               {fileName && <span className="text-slate-500 text-sm">{fileName}</span>}
             </div>
@@ -151,9 +174,10 @@ export default function KoleksiEdit() {
           <div className="flex gap-3 mt-8">
             <button
               type="submit"
-              className="px-6 py-[0.65rem] bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg cursor-pointer border-none transition-colors"
+              disabled={submitting}
+              className="px-6 py-[0.65rem] bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white text-sm font-medium rounded-lg cursor-pointer border-none transition-colors"
             >
-              Simpan Perubahan
+              {submitting ? 'Menyimpan…' : 'Simpan Perubahan'}
             </button>
             <Link
               to="/admin/dashboard"
