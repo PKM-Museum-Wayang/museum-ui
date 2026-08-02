@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
+import gambarLokasi from '../assets/lokasi.png'
 
 export default function Home() {
   return (
@@ -126,23 +127,19 @@ export default function Home() {
       {/* ── LOKASI ── */}
       <section className="px-8 md:px-20 py-24 md:py-28 border-b hairline">
         <div className="max-w-7xl mx-auto reveal">
-          <span className="eyebrow">Kunjungi Kami</span>
           <h2 className="font-display text-cream text-[clamp(28px,3.5vw,44px)] mt-3 mb-10">
             Lokasi Museum
           </h2>
           <div className="border hairline aspect-[16/6] flex items-center justify-center bg-panel">
-            <div className="text-center">
-              <svg className="mx-auto mb-4 text-gold/40" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              <p className="text-[10px] uppercase tracking-[0.15em] text-cream/30">Peta lokasi akan segera tersedia</p>
-              <p className="text-sm text-cream/50 mt-3">Kampus II USD, Jl. Affandi, Mrican, Yogyakarta 55281</p>
-            </div>
+            <img src={gambarLokasi} alt="Lokasi Museum Wayang" />
+          </div>
+          <div className="btn mt-8 flex flex-wrap gap-4 justify-center">
+            <button className="btn-primary">
+              <a href="https://maps.app.goo.gl/Wv8V3GyPrPfV5ACD8" target='_blank'>Lokasi lebih lanjut →</a>
+            </button>
           </div>
         </div>
       </section>
-
       <Footer />
     </>
   )
