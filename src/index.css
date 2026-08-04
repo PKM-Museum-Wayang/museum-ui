@@ -14,9 +14,6 @@
   --font-mono: "Poppins", sans-serif;
 }
 
-/* ─── Light mode ───
-   Override token @theme; semua utility Tailwind (text-cream, bg-ink, dst.)
-   memakai var() sehingga ikut berubah otomatis. */
 :root[data-theme="light"] {
   --color-ink: #F6F1E7;
   --color-panel: #ECE4D3;
@@ -37,7 +34,6 @@ body {
 }
 #root { min-height: 100vh; }
 
-/* ─── Utilities ─── */
 .hairline { border-color: color-mix(in srgb, var(--color-gold) 18%, transparent); }
 
 .eyebrow {
@@ -49,7 +45,6 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
-/* Scroll-reveal */
 .reveal {
   opacity: 0;
   transform: translateY(22px);
@@ -58,7 +53,6 @@ body {
 }
 .reveal.in { opacity: 1; transform: none; }
 
-/* Chips */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -78,7 +72,6 @@ body {
 .chip.is-active { color: var(--color-gold); border-color: var(--color-gold); background: color-mix(in srgb, var(--color-gold) 6%, transparent); }
 .chip .count { font-size: 9px; opacity: .65; }
 
-/* Buttons */
 .btn-primary {
   display: inline-block;
   padding: 13px 28px;
@@ -111,12 +104,10 @@ body {
 }
 .btn-ghost:hover { border-color: color-mix(in srgb, var(--color-gold) 70%, transparent); background: color-mix(in srgb, var(--color-gold) 5%, transparent); }
 
-/* Lift on hover */
 .lift { transition: transform .25s ease, box-shadow .25s ease; }
 .lift:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(0,0,0,0.45); }
 :root[data-theme="light"] .lift:hover { box-shadow: 0 10px 32px rgba(0,0,0,0.15); }
 
-/* Placeholder */
 .placeholder {
   background: var(--color-panel);
   display: flex;
@@ -132,7 +123,6 @@ body {
   width: 100%;
 }
 
-/* Arrow link */
 .arrow-link {
   display: inline-flex;
   align-items: center;
@@ -157,10 +147,8 @@ body {
 }
 .arrow-link:hover .line { width: 32px; }
 
-/* Number tabular */
 .number-tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 
-/* Page hero */
 .page-hero {
   position: relative;
   padding-top: 10rem;
@@ -168,7 +156,6 @@ body {
   border-bottom: 1px solid color-mix(in srgb, var(--color-gold) 18%, transparent);
 }
 
-/* Hero overlay (Home) — gradasi mengikuti warna latar tema */
 .hero-overlay {
   background: linear-gradient(to bottom,
     color-mix(in srgb, var(--color-ink) 30%, transparent) 0%,
@@ -176,7 +163,6 @@ body {
     color-mix(in srgb, var(--color-ink) 92%, transparent) 100%);
 }
 
-/* Form */
 .form-label {
   display: block;
   font-size: 11px;
@@ -186,6 +172,7 @@ body {
   margin-bottom: 8px;
   font-family: 'Poppins', sans-serif;
 }
+
 .input {
   display: block;
   width: 100%;
@@ -199,43 +186,43 @@ body {
   font-family: 'Poppins', sans-serif;
   transition: border-color .18s;
 }
+
 .input:focus { border-bottom-color: var(--color-gold); }
 .input::placeholder { color: color-mix(in srgb, var(--color-cream) 28%, transparent); }
 textarea.input { resize: none; border: 1px solid color-mix(in srgb, var(--color-gold) 22%, transparent); padding: 10px 12px; }
 textarea.input:focus { border-color: var(--color-gold); }
 
-/* ─── Navigation ─── */
 .museum-nav {
-  padding: 0.8rem 3rem;
-  transition: background-color 0.4s ease, padding 0.4s ease,
-              backdrop-filter 0.4s ease, box-shadow 0.4s ease;
-}
-.museum-nav.scrolled {
+  padding: 0.4rem 3rem;
   background-color: color-mix(in srgb, var(--color-ink) 92%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 2px 20px rgba(0,0,0,0.5);
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
+  transition: background-color 0.4s ease, padding 0.4s ease,
+              backdrop-filter 0.4s ease, box-shadow 0.4s ease;
 }
+
+.museum-nav.scrolled {
+  box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+}
+
 :root[data-theme="light"] .museum-nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.12); }
-/* .museum-nav-logo {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--color-cream);
-  text-decoration: none;
-  letter-spacing: 0.02em;
-} */
+.museum-nav-logo {
+  display: flex;
+  align-items: center;
+}
+
 .museum-nav-link {
   font-family: 'Poppins', sans-serif;
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   color: color-mix(in srgb, var(--color-cream) 75%, transparent);
   text-decoration: none;
   position: relative;
   padding-bottom: 4px;
   transition: color 0.3s ease;
 }
+
 .museum-nav-link::after {
   content: '';
   position: absolute;
