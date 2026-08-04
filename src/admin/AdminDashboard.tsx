@@ -4,8 +4,8 @@ import api, { BASE_URL } from '../lib/api'
 
 interface MediaWayang {
   id: number
-  judul: string
-  jenisMedia: 'IMAGE' | 'VIDEO'
+  namaFile: string
+  // jenis: 'IMAGE' | 'VIDEO'
   fileUrl: string
   keterangan?: string
 }
@@ -16,7 +16,7 @@ interface Wayang {
   nama: string
   daerah?: string
   kondisi?: string
-  media: MediaWayang[]
+  // media: MediaWayang[]
 }
 
 export default function AdminDashboard() {
@@ -28,8 +28,8 @@ export default function AdminDashboard() {
   const fetchWayang = async () => {
     try {
       setLoading(true)
-      const res = await api.get<Wayang[]>('/wayang')
-      setWayangList(res.data)
+      const res = await api.get('/wayang')
+      setWayangList(res.data.data.data)
     } catch {
       setError('Gagal memuat data. Pastikan backend sudah berjalan di port 3000.')
     } finally {
@@ -53,7 +53,7 @@ export default function AdminDashboard() {
   }
 
   const getThumb = (media: MediaWayang[]) => {
-    const img = media.find(m => m.jenisMedia === 'IMAGE')
+    const img = media.find(m => m.jenis === 'IMAGE')
     return img ? `${BASE_URL}${img.fileUrl}` : null
   }
 

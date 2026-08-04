@@ -18,7 +18,7 @@ export default function Login() {
     setLoading(true)
     try {
       const res = await api.post('/auth/login', form)
-      localStorage.setItem('admin_token', res.data.token)
+      localStorage.setItem('admin_token', res.data.data.token)
       navigate('/admin/dashboard')
     } catch {
       setError('Username atau password salah.')
