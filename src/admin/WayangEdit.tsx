@@ -4,10 +4,21 @@ import api, { BASE_URL } from '../lib/api'
 
 const KONDISI_LIST = ['Baik', 'Cukup Baik', 'Perlu Restorasi', 'Rusak']
 
+interface Golongan {
+  id: number
+  namaGolongan: string
+  tipeGolongan: string
+}
+
+interface Penyimpanan {
+  id: number
+  namaKotak: string
+}
+
 interface MediaWayang {
   id: number
-  judul: string
-  jenisMedia: 'IMAGE' | 'VIDEO'
+  namaFile: string
+  jenis: 'IMAGE' | 'VIDEO'
   fileUrl: string
 }
 
@@ -19,16 +30,19 @@ interface WayangDetail {
   deskripsi?: string
   cerita?: string
   kondisi?: string
+  golonganId: number
+  penyimpananId: number
   media: MediaWayang[]
 }
 
 interface FormState {
-  noWayang: string
   nama: string
   daerah: string
   deskripsi: string
   cerita: string
   kondisi: string
+  golonganId: string
+  penyimpananId: string
 }
 
 export default function WayangEdit() {
@@ -36,30 +50,39 @@ export default function WayangEdit() {
   const navigate = useNavigate()
   const fileRef = useRef<HTMLInputElement>(null)
 
+  const [noWayang, setNoWayang] = useState('')
   const [form, setForm] = useState<FormState>({
-    noWayang: '', nama: '', daerah: '', deskripsi: '', cerita: '', kondisi: '',
+    nama: '', daerah: '', deskripsi: '', cerita: '', kondisi: '', golonganId: '', penyimpananId: '',
   })
+  const [golonganList, setGolonganList] = useState<Golongan[]>([])
+  const [penyimpananList, setPenyimpananList] = useState<Penyimpanan[]>([])
   const [existingMedia, setExistingMedia] = useState<MediaWayang[]>([])
   const [fileName, setFileName] = useState('')
-  const [errors, setErrors] = useState<Partial<FormState>>({})
+  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
+  const [submitError, setSubmitError] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    api.get<WayangDetail>(`/wayang/${id}`)
+    api.get('/golongan').then(res => setGolonganList(res.data.data)).catch(() => {})
+    api.get('/penyimpanan').then(res => setPenyimpananList(res.data.data)).catch(() => {})
+
+    api.get(`/wayang/${id}`)
       .then(res => {
-        const w = res.data
+        const w: WayangDetail = res.data.data
+        setNoWayang(w.noWayang)
         setForm({
-          noWayang: w.noWayang,
           nama: w.nama,
           daerah: w.daerah ?? '',
           deskripsi: w.deskripsi ?? '',
           cerita: w.cerita ?? '',
           kondisi: w.kondisi ?? '',
+          golonganId: String(w.golonganId),
+          penyimpananId: String(w.penyimpananId),
         })
         setExistingMedia(w.media)
       })
-      .catch(() => setErrors({ noWayang: 'Gagal memuat data.' }))
+      .catch(() => setSubmitError('Gagal memuat data.'))
       .finally(() => setLoading(false))
   }, [id])
 
@@ -68,9 +91,10 @@ export default function WayangEdit() {
       setForm(prev => ({ ...prev, [field]: e.target.value }))
 
   const validate = () => {
-    const err: Partial<FormState> = {}
-    if (!form.noWayang.trim()) err.noWayang = 'Nomor wayang wajib diisi.'
+    const err: Partial<Record<keyof FormState, string>> = {}
     if (!form.nama.trim()) err.nama = 'Nama wajib diisi.'
+    if (!form.golonganId) err.golonganId = 'Golongan wajib dipilih.'
+    if (!form.penyimpananId) err.penyimpananId = 'Kotak penyimpanan wajib dipilih.'
     setErrors(err)
     return Object.keys(err).length === 0
   }
@@ -82,23 +106,26 @@ export default function WayangEdit() {
 
   const handleSubmit = async (e: { preventDefault(): void }) => {
     e.preventDefault()
+    setSubmitError('')
     if (!validate()) return
     setSubmitting(true)
     try {
+      // noWayang tidak ikut dikirim — backend tidak mengubahnya lewat update
       await api.patch(`/wayang/${id}`, {
-        noWayang: form.noWayang,
         nama: form.nama,
         daerah: form.daerah || undefined,
         deskripsi: form.deskripsi || undefined,
         cerita: form.cerita || undefined,
         kondisi: form.kondisi || undefined,
+        golonganId: Number(form.golonganId),
+        penyimpananId: Number(form.penyimpananId),
       })
 
       if (fileRef.current?.files?.[0]) {
         const body = new FormData()
         body.append('file', fileRef.current.files[0])
-        body.append('judul', form.nama)
-        body.append('jenisMedia', 'IMAGE')
+        body.append('namaFile', form.nama)
+        body.append('jenis', 'IMAGE')
         await api.post(`/wayang/${id}/media`, body, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
@@ -106,7 +133,7 @@ export default function WayangEdit() {
 
       navigate('/admin/dashboard')
     } catch {
-      setErrors(prev => ({ ...prev, noWayang: 'Gagal menyimpan. Coba lagi.' }))
+      setSubmitError('Gagal menyimpan. Pastikan semua data valid dan kamu sudah login.')
     } finally {
       setSubmitting(false)
     }
@@ -114,7 +141,7 @@ export default function WayangEdit() {
 
   if (loading) return <div className="py-20 text-center text-slate-400">Memuat data…</div>
 
-  const thumbs = existingMedia.filter(m => m.jenisMedia === 'IMAGE')
+  const thumbs = existingMedia.filter(m => m.jenis === 'IMAGE')
 
   return (
     <>
@@ -123,14 +150,20 @@ export default function WayangEdit() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm p-8 max-w-2xl">
+        {submitError && (
+          <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+            {submitError}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
 
           <div className="grid grid-cols-2 gap-6 mb-6">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">No. Wayang <span className="text-red-400">*</span></label>
-              <input value={form.noWayang} onChange={set('noWayang')}
-                className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition" />
-              {errors.noWayang && <p className="text-red-500 text-xs mt-1">{errors.noWayang}</p>}
+              <label className="block text-sm font-medium text-slate-700 mb-2">No. Wayang</label>
+              <input value={noWayang} disabled readOnly
+                className="w-full px-4 py-3 text-sm border border-slate-200 bg-slate-50 text-slate-400 rounded-lg outline-none cursor-not-allowed" />
+              <p className="text-slate-400 text-xs mt-1">Dibuat otomatis, tidak bisa diubah.</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Nama <span className="text-red-400">*</span></label>
@@ -140,20 +173,43 @@ export default function WayangEdit() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-3 gap-6 mb-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Daerah Asal</label>
               <input value={form.daerah} onChange={set('daerah')}
                 className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Kondisi</label>
-              <select value={form.kondisi} onChange={set('kondisi')}
+              <label className="block text-sm font-medium text-slate-700 mb-2">Golongan <span className="text-red-400">*</span></label>
+              <select value={form.golonganId} onChange={set('golonganId')}
                 className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition bg-white">
-                <option value="">Pilih Kondisi</option>
-                {KONDISI_LIST.map(k => <option key={k} value={k}>{k}</option>)}
+                <option value="">Pilih Golongan</option>
+                {golonganList.map(g => (
+                  <option key={g.id} value={g.id}>{g.namaGolongan} ({g.tipeGolongan})</option>
+                ))}
               </select>
+              {errors.golonganId && <p className="text-red-500 text-xs mt-1">{errors.golonganId}</p>}
             </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Kotak Penyimpanan <span className="text-red-400">*</span></label>
+              <select value={form.penyimpananId} onChange={set('penyimpananId')}
+                className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition bg-white">
+                <option value="">Pilih Kotak</option>
+                {penyimpananList.map(p => (
+                  <option key={p.id} value={p.id}>{p.namaKotak}</option>
+                ))}
+              </select>
+              {errors.penyimpananId && <p className="text-red-500 text-xs mt-1">{errors.penyimpananId}</p>}
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-slate-700 mb-2">Kondisi</label>
+            <select value={form.kondisi} onChange={set('kondisi')}
+              className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition bg-white">
+              <option value="">Pilih Kondisi</option>
+              {KONDISI_LIST.map(k => <option key={k} value={k}>{k}</option>)}
+            </select>
           </div>
 
           <div className="mb-6">
@@ -175,7 +231,7 @@ export default function WayangEdit() {
               <div className="flex flex-wrap gap-3 mb-3">
                 {thumbs.map(m => (
                   <div key={m.id} className="relative">
-                    <img src={`${BASE_URL}${m.fileUrl}`} alt={m.judul}
+                    <img src={`${BASE_URL}${m.fileUrl}`} alt={m.namaFile}
                       className="w-[80px] h-[80px] object-cover rounded-lg bg-slate-100" />
                     <button type="button" onClick={() => handleDeleteMedia(m.id)}
                       className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center border-none cursor-pointer hover:bg-red-600">
