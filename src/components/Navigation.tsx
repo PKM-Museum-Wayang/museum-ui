@@ -75,7 +75,7 @@ export default function Navigation() {
 
           {/* Mobile hamburger */}
           <button
-            className={`museum-hamburger md:hidden${mobileOpen ? ' active' : ''}`}
+            className={`museum-hamburger md:hidden ${mobileOpen ? 'active' : ''}`}
             aria-label="Buka menu"
             onClick={() => setMobileOpen(v => !v)}
           >
@@ -87,7 +87,7 @@ export default function Navigation() {
       </nav>
 
       {/* Mobile panel */}
-      <div className={`museum-mobile-nav md:hidden${mobileOpen ? ' open' : ''}`}>
+      <div className={`museum-mobile-nav md:hidden ${mobileOpen ? ' open' : ''}`}>
         <ul className="flex flex-col items-center gap-8 text-[0.95rem] list-none m-0 p-0">
           {navLinks.map(({ to, label, end }) => (
             <li key={to}>
