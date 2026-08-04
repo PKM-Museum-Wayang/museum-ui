@@ -10,7 +10,8 @@ export default function Home() {
         {/* Background image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
-          style={{ backgroundImage: "url('/museum-wayang.jpg')" }}
+          // style={{ backgroundImage: "url('/museum-wayang.jpg')" }}
+          style={{ backgroundImage: "url('/bg.JPG')" }}
         />
         {/* Gradient overlay — mengikuti warna latar tema (gelap/terang) */}
         <div className="absolute inset-0 z-10 hero-overlay" />
@@ -20,7 +21,7 @@ export default function Home() {
           <h1 className="font-display text-[clamp(48px,8vw,104px)] leading-[1] text-cream">
             Koleksi Wayang Sutarwin
           </h1>
-          <p className="mt-8 text-cream/60 text-lg max-w-md mx-auto leading-relaxed">
+          <p className="mt-8 text-cream/70 text-lg max-w-md mx-auto leading-relaxed">
             Merawat warisan, melanjutkan cerita.
           </p>
           <div className="mt-12 flex flex-wrap gap-4 justify-center">

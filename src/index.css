@@ -38,10 +38,10 @@ body {
 
 .eyebrow {
   display: block;
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-cream) 45%, transparent);
+  color: color-mix(in srgb, var(--color-cream) 70%, transparent);
   font-family: 'Poppins', sans-serif;
 }
 
@@ -77,7 +77,7 @@ body {
   padding: 13px 28px;
   background: var(--color-gold);
   color: var(--color-ink);
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   text-decoration: none;
@@ -93,7 +93,7 @@ body {
   padding: 12px 26px;
   border: 1px solid color-mix(in srgb, var(--color-gold) 32%, transparent);
   color: var(--color-gold);
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   text-decoration: none;
