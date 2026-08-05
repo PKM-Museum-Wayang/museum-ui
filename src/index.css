@@ -41,7 +41,7 @@ body {
   font-size: 13px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-cream) 70%, transparent);
+  color: color-mix(in srgb, var(--color-cream) 80%, transparent);
   font-family: 'Poppins', sans-serif;
 }
 

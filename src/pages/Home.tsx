@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import gambarLokasi from '../assets/lokasi.png'
+import koleksiGambar1 from '../assets/foto-koleksi-1.jpeg'
+import koleksiGambar2 from '../assets/foto-koleksi-2.jpeg'
 
 export default function Home() {
   return (
@@ -17,7 +19,7 @@ export default function Home() {
         <div className="absolute inset-0 z-10 hero-overlay" />
 
         <div className="relative z-20 text-center px-8 animate-[fadeInUp_1s_ease_0.3s_both]">
-          <p className="eyebrow mb-6">Museum Wayang · Universitas Sanata Dharma</p>
+          <p className="eyebrow mb-6">Museum Wayang</p>
           <h1 className="font-display text-[clamp(48px,8vw,104px)] leading-[1] text-cream">
             Koleksi Wayang Sutarwin
           </h1>
@@ -60,8 +62,12 @@ export default function Home() {
           </div>
           <div className="reveal" style={{ ['--rd' as string]: '150ms' }}>
             <div className="grid grid-cols-2 gap-4">
-              <div className="placeholder aspect-[3/4]">FOTO KOLEKSI 1</div>
-              <div className="placeholder aspect-[3/4] mt-8">FOTO KOLEKSI 2</div>
+              <div className="placeholder aspect-[3/4]">
+                <img src={koleksiGambar1} alt="Koleksi 1" />
+              </div>
+              <div className="placeholder aspect-[3/4] mt-8">
+                <img src={koleksiGambar2} alt="Koleksi 2" />
+              </div>
             </div>
           </div>
         </div>
