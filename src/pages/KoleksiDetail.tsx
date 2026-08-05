@@ -118,13 +118,6 @@ export default function KoleksiDetail() {
             </h1>
             <p className="font-display italic text-2xl text-gold mt-3">{tipeLabel}</p>
 
-            {koleksi.deskripsi && (
-              <p className="mt-10 text-cream/70 leading-[1.85] text-[15px]">{koleksi.deskripsi}</p>
-            )}
-            {koleksi.cerita && (
-              <p className="mt-4 text-cream/60 leading-[1.85] text-[14px]">{koleksi.cerita}</p>
-            )}
-
             {/* Specs */}
             <dl className="mt-12 space-y-5">
               <div className="grid grid-cols-3 border-t hairline pt-4">
@@ -143,10 +136,18 @@ export default function KoleksiDetail() {
                   <dd className="col-span-2 text-cream/85">{koleksi.kondisi}</dd>
                 </div>
               )}
-              <div className="grid grid-cols-3 border-t hairline pt-4">
+              {/* <div className="grid grid-cols-3 border-t hairline pt-4">
                 <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">No. Wayang</dt>
                 <dd className="col-span-2 text-cream/85 font-mono">{koleksi.noWayang}</dd>
-              </div>
+              </div> */}
+
+            {koleksi.deskripsi && (
+              <p className="mt-10 text-cream/70 leading-[1.85] text-[15px]">{koleksi.deskripsi}</p>
+            )}
+            {koleksi.cerita && (
+              <p className="mt-4 text-cream/60 leading-[1.85] text-[14px]">{koleksi.cerita}</p>
+            )}
+
             </dl>
 
             <div className="mt-12 flex gap-4 flex-wrap">

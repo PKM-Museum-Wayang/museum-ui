@@ -110,7 +110,6 @@ export default function WayangEdit() {
     if (!validate()) return
     setSubmitting(true)
     try {
-      // noWayang tidak ikut dikirim — backend tidak mengubahnya lewat update
       await api.patch(`/wayang/${id}`, {
         nama: form.nama,
         daerah: form.daerah || undefined,
