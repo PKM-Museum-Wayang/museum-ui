@@ -1,41 +1,78 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
+import api, { BASE_URL } from '../lib/api'
 
 /* ── Types ── */
+interface MediaWayang {
+  id: number
+  jenis: 'IMAGE' | 'VIDEO'
+  fileUrl: string
+}
+
+interface WayangApi {
+  id: number
+  nama: string
+  golonganId: number
+  media: MediaWayang[]
+}
+
+interface Golongan {
+  id: number
+  namaGolongan: string
+  tipeGolongan: string
+}
+
 interface KoleksiItem {
   id: number
   nama: string
-  jenis: string
+  tipeGolongan: string
   gambar?: string
 }
 
-/* ── Mock data — ganti dengan fetch ke API saat backend siap ── */
-const MOCK_KOLEKSI: KoleksiItem[] = [
-  { id: 1, nama: 'Arjuna', jenis: 'Wayang Kulit' },
-  { id: 2, nama: 'Bima', jenis: 'Wayang Kulit' },
-  { id: 3, nama: 'Kresna', jenis: 'Wayang Kulit' },
-  { id: 4, nama: 'Srikandi', jenis: 'Wayang Kulit' },
-  { id: 5, nama: 'Gatotkaca', jenis: 'Wayang Kulit' },
-  { id: 6, nama: 'Nakula', jenis: 'Wayang Kulit' },
-  { id: 7, nama: 'Sadewa', jenis: 'Wayang Kulit' },
-  { id: 8, nama: 'Cepot', jenis: 'Wayang Golek' },
-  { id: 9, nama: 'Dawala', jenis: 'Wayang Golek' },
-  { id: 10, nama: 'Bagong', jenis: 'Wayang Golek' },
-  { id: 11, nama: 'Rahwana', jenis: 'Wayang Kulit' },
-  { id: 12, nama: 'Hanoman', jenis: 'Wayang Kulit' },
+const TIPE_GOLONGAN_LIST = [
+  { value: 'SIMPINGAN_KIRI', label: 'Simpingan Kiri' },
+  { value: 'SIMPINGAN_KANAN', label: 'Simpingan Kanan' },
+  { value: 'DUDHAHAN', label: 'Dudhahan' },
 ]
 
-const JENIS_LIST = ['Wayang Kulit', 'Wayang Golek', 'Wayang Klitik', 'Wayang Bali', 'Wayang Lombok']
+const tipeGolonganLabel = (tipe: string) =>
+  TIPE_GOLONGAN_LIST.find(t => t.value === tipe)?.label ?? tipe
 
 export default function Koleksi() {
+  const [koleksi, setKoleksi] = useState<KoleksiItem[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [activeJenis, setActiveJenis] = useState('')
+  const [activeTipe, setActiveTipe] = useState('')
 
-  const filtered = MOCK_KOLEKSI.filter(k => {
-    const matchJenis = !activeJenis || k.jenis === activeJenis
+  useEffect(() => {
+    Promise.all([
+      api.get('/wayang?limit=100'),
+      api.get('/golongan'),
+    ])
+      .then(([wayangRes, golonganRes]) => {
+        const wayangList: WayangApi[] = wayangRes.data.data.data
+        const golonganList: Golongan[] = golonganRes.data.data
+        const golonganMap = new Map(golonganList.map(g => [g.id, g]))
+
+        setKoleksi(wayangList.map(w => {
+          const gambarMedia = w.media.find(m => m.jenis === 'IMAGE')
+          return {
+            id: w.id,
+            nama: w.nama,
+            tipeGolongan: golonganMap.get(w.golonganId)?.tipeGolongan ?? '',
+            gambar: gambarMedia ? `${BASE_URL}${gambarMedia.fileUrl}` : undefined,
+          }
+        }))
+      })
+      .catch(() => setKoleksi([]))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const filtered = koleksi.filter(k => {
+    const matchTipe = !activeTipe || k.tipeGolongan === activeTipe
     const matchSearch = !search || k.nama.toLowerCase().includes(search.toLowerCase())
-    return matchJenis && matchSearch
+    return matchTipe && matchSearch
   })
 
   return (
@@ -62,19 +99,19 @@ export default function Koleksi() {
           <ul className="flex flex-wrap items-center gap-x-8 gap-y-3 text-[11px] uppercase tracking-[0.15em] list-none m-0 p-0">
             <li>
               <button
-                className={`${!activeJenis ? 'text-gold border-b border-gold pb-1' : 'text-cream/55 hover:text-gold transition-colors'}`}
-                onClick={() => setActiveJenis('')}
+                className={`${!activeTipe ? 'text-gold border-b border-gold pb-1' : 'text-cream/55 hover:text-gold transition-colors'}`}
+                onClick={() => setActiveTipe('')}
               >
                 Semua
               </button>
             </li>
-            {JENIS_LIST.map(j => (
-              <li key={j}>
+            {TIPE_GOLONGAN_LIST.map(t => (
+              <li key={t.value}>
                 <button
-                  className={`${activeJenis === j ? 'text-gold border-b border-gold pb-1' : 'text-cream/55 hover:text-gold transition-colors'}`}
-                  onClick={() => setActiveJenis(j)}
+                  className={`${activeTipe === t.value ? 'text-gold border-b border-gold pb-1' : 'text-cream/55 hover:text-gold transition-colors'}`}
+                  onClick={() => setActiveTipe(t.value)}
                 >
-                  {j}
+                  {t.label}
                 </button>
               </li>
             ))}
@@ -106,11 +143,15 @@ export default function Koleksi() {
             </p>
           </div>
 
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-24">
+              <p className="font-display text-2xl text-cream/40">Memuat koleksi…</p>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="text-center py-24">
               <p className="font-display text-2xl text-cream/40">Koleksi tidak ditemukan.</p>
               <button
-                onClick={() => { setSearch(''); setActiveJenis('') }}
+                onClick={() => { setSearch(''); setActiveTipe('') }}
                 className="mt-6 inline-block text-[11px] uppercase tracking-[0.15em] text-gold hover:underline"
               >
                 Lihat semua koleksi
@@ -138,7 +179,7 @@ export default function Koleksi() {
                   )}
                   <div className="mt-4 px-1">
                     <h4 className="font-display text-xl text-cream group-hover:text-gold transition-colors">{k.nama}</h4>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-cream/45 mt-1">{k.jenis}</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-cream/45 mt-1">{tipeGolonganLabel(k.tipeGolongan)}</p>
                   </div>
                 </Link>
               ))}
