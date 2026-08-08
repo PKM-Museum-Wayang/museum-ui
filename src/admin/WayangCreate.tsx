@@ -2,8 +2,17 @@ import { useState, useRef, useEffect, type ChangeEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../lib/api'
 
+const DAERAH_ASAL_LIST = ['Yogyakarta', 'Surakarta', 'Kedu']
 const KONDISI_LIST = ['Baik', 'Cukup Baik', 'Perlu Restorasi', 'Rusak']
 const GAYA_LIST = ['Purwo Yogyakarta', 'Purwo Surakarta', 'Purwo Kedu']
+const KOTAK_PENYIMPANAN = ['Kotak 1', 'Kotak 2', 'Kotak 3', 'Kotak 4', 'Kotak 5',
+  'Kotak 6', 'Kotak 7', 'Kotak 8', 'Kotak 9'
+]
+const TIPE_GOLONGAN_LIST = [
+  { value: 'SIMPINGAN_KIRI', label: 'Simpingan Kiri' },
+  { value: 'SIMPINGAN_KANAN', label: 'Simpingan Kanan' },
+  { value: 'DUDHAHAN', label: 'Dudhahan' },
+]
 
 interface Golongan {
   id: number
@@ -23,6 +32,7 @@ interface FormState {
   cerita: string
   kondisi: string
   gaya: string
+  tipeGolongan: string
   golonganId: string
   penyimpananId: string
 }
@@ -31,7 +41,7 @@ export default function WayangCreate() {
   const navigate = useNavigate()
   const fileRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState<FormState>({
-    nama: '', daerah: '', deskripsi: '', cerita: '', kondisi: '', gaya: '', golonganId: '', penyimpananId: '',
+    nama: '', daerah: '', deskripsi: '', cerita: '', kondisi: '', gaya: '', tipeGolongan: '', golonganId: '', penyimpananId: '',
   })
   const [golonganList, setGolonganList] = useState<Golongan[]>([])
   const [penyimpananList, setPenyimpananList] = useState<Penyimpanan[]>([])
@@ -49,11 +59,19 @@ export default function WayangCreate() {
     (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
       setForm(prev => ({ ...prev, [field]: e.target.value }))
 
+  // Ganti tipe golongan → reset pilihan nama golongan, karena daftarnya ikut berubah
+  const handleTipeGolonganChange = (e: ChangeEvent<HTMLSelectElement>) =>
+    setForm(prev => ({ ...prev, tipeGolongan: e.target.value, golonganId: '' }))
+
+  const filteredGolongan = golonganList.filter(g => g.tipeGolongan === form.tipeGolongan)
+
   const validate = () => {
     const err: Partial<Record<keyof FormState, string>> = {}
+    if (!form.daerah) err.daerah = 'Daerah asal wajid diisi.'
     if (!form.nama.trim()) err.nama = 'Nama wajib diisi.'
     if (!form.gaya) err.gaya = 'Gaya wajib dipilih.'
-    if (!form.golonganId) err.golonganId = 'Golongan wajib dipilih.'
+    if (!form.tipeGolongan) err.tipeGolongan = 'Tipe golongan wajib dipilih.'
+    if (!form.golonganId) err.golonganId = 'Nama golongan wajib dipilih.'
     if (!form.penyimpananId) err.penyimpananId = 'Kotak penyimpanan wajib dipilih.'
     setErrors(err)
     return Object.keys(err).length === 0
@@ -69,7 +87,7 @@ export default function WayangCreate() {
       const res = await api.post('/wayang', {
         nama: form.nama,
         gaya: form.gaya,
-        daerah: form.daerah || undefined,
+        daerah: form.daerah,
         deskripsi: form.deskripsi || undefined,
         cerita: form.cerita || undefined,
         kondisi: form.kondisi || undefined,
@@ -120,9 +138,12 @@ export default function WayangCreate() {
               {errors.nama && <p className="text-red-500 text-xs mt-1">{errors.nama}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Daerah Asal</label>
-              <input value={form.daerah} onChange={set('daerah')} placeholder="cth. Solo, Yogyakarta"
-                className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition" />
+              <label className="block text-sm font-medium text-slate-700 mb-2">Daerah Asal <span className="text-red-400">*</span></label>
+              <select value={form.daerah} onChange={set('daerah')} className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition bg-white">
+                <option value="">Pilih Daerah Asal</option>
+                {DAERAH_ASAL_LIST.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+              {errors.daerah && <p className="text-red-500 text-xs mt-1">{errors.daerah}</p>}
             </div>
           </div>
 
@@ -137,23 +158,36 @@ export default function WayangCreate() {
               {errors.gaya && <p className="text-red-500 text-xs mt-1">{errors.gaya}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Golongan <span className="text-red-400">*</span></label>
-              <select value={form.golonganId} onChange={set('golonganId')}
+              <label className="block text-sm font-medium text-slate-700 mb-2">Tipe Golongan <span className="text-red-400">*</span></label>
+              <select value={form.tipeGolongan} onChange={handleTipeGolonganChange}
                 className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition bg-white">
-                <option value="">Pilih Golongan</option>
-                {golonganList.map(g => (
-                  <option key={g.id} value={g.id}>{g.namaGolongan} ({g.tipeGolongan})</option>
+                <option value="">Pilih Tipe Golongan</option>
+                {TIPE_GOLONGAN_LIST.map(t => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+              {errors.tipeGolongan && <p className="text-red-500 text-xs mt-1">{errors.tipeGolongan}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Nama Golongan <span className="text-red-400">*</span></label>
+              <select value={form.golonganId} onChange={set('golonganId')} disabled={!form.tipeGolongan}
+                className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition bg-white disabled:bg-slate-50 disabled:text-slate-400">
+                <option value="">{form.tipeGolongan ? 'Pilih Nama Golongan' : 'Pilih tipe golongan dulu'}</option>
+                {filteredGolongan.map(g => (
+                  <option key={g.id} value={g.id}>{g.namaGolongan}</option>
                 ))}
               </select>
               {errors.golonganId && <p className="text-red-500 text-xs mt-1">{errors.golonganId}</p>}
             </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Kotak Penyimpanan <span className="text-red-400">*</span></label>
               <select value={form.penyimpananId} onChange={set('penyimpananId')}
                 className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition bg-white">
                 <option value="">Pilih Kotak</option>
-                {penyimpananList.map(p => (
-                  <option key={p.id} value={p.id}>{p.namaKotak}</option>
+                {KOTAK_PENYIMPANAN.map(p => (
+                  <option key={p} value={p}>{p}</option>
                 ))}
               </select>
               {errors.penyimpananId && <p className="text-red-500 text-xs mt-1">{errors.penyimpananId}</p>}
@@ -183,7 +217,7 @@ export default function WayangCreate() {
               className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition resize-y" />
           </div>
 
-          {/* <div className="mb-6">
+          <div className="mb-6">
             <label className="block text-sm font-medium text-slate-700 mb-2">Gambar</label>
             <div className="flex items-center gap-3">
               <label className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium rounded-lg cursor-pointer transition-colors">
@@ -197,7 +231,7 @@ export default function WayangCreate() {
               </label>
               {fileName && <span className="text-slate-500 text-sm">{fileName}</span>}
             </div>
-          </div> */}
+          </div>
 
           <div className="flex gap-3 mt-8">
             <button type="submit" disabled={submitting}

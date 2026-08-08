@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import api, { BASE_URL } from '../lib/api'
 
 const KONDISI_LIST = ['Baik', 'Cukup Baik', 'Perlu Restorasi', 'Rusak']
+const DAERAH_ASAL_LIST = ['Yogyakarta', 'Surakarta', 'Kedu']
 
 interface Golongan {
   id: number
@@ -175,8 +176,11 @@ export default function WayangEdit() {
           <div className="grid grid-cols-3 gap-6 mb-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Daerah Asal</label>
-              <input value={form.daerah} onChange={set('daerah')}
-                className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition" />
+              <select value={form.daerah} onChange={set('daerah')}
+                className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition bg-white">
+                <option value="">Pilih Daerah Asal</option>
+                {DAERAH_ASAL_LIST.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Golongan <span className="text-red-400">*</span></label>
