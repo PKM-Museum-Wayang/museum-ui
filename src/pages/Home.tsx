@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import gambarLokasi from '../assets/lokasi.png'
-import koleksiGambar1 from '../assets/foto-koleksi-1.jpeg'
+import koleksiGambar1 from '../assets/foto-koleksi-1.jpg'
 import koleksiGambar2 from '../assets/foto-koleksi-2.jpeg'
 
 export default function Home() {
@@ -62,8 +62,8 @@ export default function Home() {
           </div>
           <div className="reveal" style={{ ['--rd' as string]: '150ms' }}>
             <div className="grid grid-cols-2 gap-4">
-              <div className="placeholder aspect-[3/4]">
-                <img src={koleksiGambar1} alt="Koleksi 1" />
+              <div className="placeholder aspect-[4/3]">
+                <img src={koleksiGambar1} alt="Koleksi 1" className="w-full h-full object-contain" />
               </div>
               <div className="placeholder aspect-[3/4] mt-8">
                 <img src={koleksiGambar2} alt="Koleksi 2" />
