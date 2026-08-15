@@ -130,12 +130,12 @@ export default function KoleksiDetail() {
                   <dd className="col-span-2 text-cream/85">{koleksi.daerah}</dd>
                 </div>
               )}
-              {koleksi.kondisi && (
+              {/* {koleksi.kondisi && (
                 <div className="grid grid-cols-3 border-t hairline pt-4">
                   <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">Kondisi</dt>
                   <dd className="col-span-2 text-cream/85">{koleksi.kondisi}</dd>
                 </div>
-              )}
+              )} */}
               {/* <div className="grid grid-cols-3 border-t hairline pt-4">
                 <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">No. Wayang</dt>
                 <dd className="col-span-2 text-cream/85 font-mono">{koleksi.noWayang}</dd>
@@ -151,7 +151,7 @@ export default function KoleksiDetail() {
             </dl>
 
             <div className="mt-12 flex gap-4 flex-wrap">
-              <Link to="/kontak" className="btn-primary">Janji Kunjungan →</Link>
+              {/* <Link to="/kontak" className="btn-primary">Janji Kunjungan →</Link> */}
               <Link to="/koleksi" className="btn-ghost">← Kembali</Link>
             </div>
           </div>

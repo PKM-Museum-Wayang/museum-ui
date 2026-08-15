@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import api, { BASE_URL } from '../lib/api'
 
 const KONDISI_LIST = ['Baik', 'Cukup Baik', 'Perlu Restorasi', 'Rusak']
+const DAERAH_ASAL_LIST = ['Yogyakarta', 'Surakarta', 'Kedu']
 
 interface Golongan {
   id: number
@@ -148,7 +149,7 @@ export default function WayangEdit() {
         <h1 className="text-2xl font-bold text-slate-900">Edit Wayang</h1>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-8 max-w-2xl">
+      <div className="bg-white rounded-xl shadow-sm p-8">
         {submitError && (
           <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
             {submitError}
@@ -175,8 +176,11 @@ export default function WayangEdit() {
           <div className="grid grid-cols-3 gap-6 mb-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Daerah Asal</label>
-              <input value={form.daerah} onChange={set('daerah')}
-                className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition" />
+              <select value={form.daerah} onChange={set('daerah')}
+                className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition bg-white">
+                <option value="">Pilih Daerah Asal</option>
+                {DAERAH_ASAL_LIST.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Golongan <span className="text-red-400">*</span></label>
