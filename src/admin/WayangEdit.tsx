@@ -149,7 +149,7 @@ export default function WayangEdit() {
         <h1 className="text-2xl font-bold text-slate-900">Edit Wayang</h1>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-8 max-w-2xl">
+      <div className="bg-white rounded-xl shadow-sm p-8">
         {submitError && (
           <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
             {submitError}

@@ -1,3 +1,4 @@
+import {useState} from 'react'
 import { NavLink, Outlet, Link } from 'react-router-dom'
 
 const sidebarLinks = [
@@ -24,17 +25,31 @@ const sidebarLinks = [
 ]
 
 export default function AdminLayout() {
+  const [collapsed, setCollapsed] = useState(false)
+
   return (
     <div className="flex min-h-screen font-sans bg-slate-100 text-slate-800">
       {/* ── Sidebar ── */}
       <aside
-        className="w-[260px] fixed top-0 left-0 bottom-0 z-50 flex flex-col py-8"
+        className={`${collapsed ? 'w-[72px]' : 'w-[260px]'} fixed top-0 left-0 bottom-0 z-50 flex flex-col py-8 transition-all duration-300`}
         style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}
       >
+
+        <button onClick={() => setCollapsed(v => !v)} className='absolute -right-3 top-8 w-6 h-6 flex items-center justify-center rounded-full bg-slate-800 border border-white/10 text-white cursor-pointer'>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+            className={collapsed ? 'rotate-180' : ''}>
+              <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+
         {/* Brand */}
         <div className="px-6 pb-8 border-b border-white/10 mb-6">
-          <h2 className="text-white font-bold text-xl">Museum Wayang</h2>
-          <span className="text-slate-400 text-xs mt-1 block">Dashboard Admin</span>
+          {!collapsed && (
+            <>
+              <h2 className="text-white font-bold text-xl">Museum Wayang</h2>
+              <span className="text-slate-400 text-xs mt-1 block">Dashboard Admin</span>
+            </>
+          )}
         </div>
 
         {/* Nav */}
@@ -53,7 +68,7 @@ export default function AdminLayout() {
                   }
                 >
                   {icon}
-                  {label}
+                  {!collapsed && label}
                 </NavLink>
               </li>
             ))}
@@ -69,13 +84,17 @@ export default function AdminLayout() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 18l-6-6 6-6" />
             </svg>
-            Kembali ke Website
+            {!collapsed && (
+              <>
+              <span>Kembali ke Website</span>
+              </>
+            )}
           </Link>
         </div>
       </aside>
 
       {/* ── Main ── */}
-      <main className="flex-1 ml-[260px] min-h-screen p-8">
+      <main className={`flex-1 ${collapsed ? 'ml-[72px]': 'ml-[260px]'} min-h-screen p-8 transition-all duration-300`}>
         <Outlet />
       </main>
     </div>
