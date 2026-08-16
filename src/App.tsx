@@ -11,6 +11,9 @@ import AdminLayout from './admin/AdminLayout'
 import AdminDashboard from './admin/AdminDashboard'
 import WayangCreate from './admin/WayangCreate'
 import WayangEdit from './admin/WayangEdit'
+import GolonganManage from './admin/GolonganManage'
+import PenyimpananManage from './admin/PenyimpananManage'
+import WayangCerita from './admin/AdminCerita'
 
 export default function App() {
   return (
@@ -34,7 +37,9 @@ export default function App() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="wayang/create" element={<WayangCreate />} />
           <Route path="wayang/:id/edit" element={<WayangEdit />} />
-          <Route path="cerita" element={<AdminDashboard />} />
+          <Route path="cerita" element={<WayangCerita />} />
+          <Route path="penyimpanan" element={<PenyimpananManage />} />
+          <Route path="golongan" element={<GolonganManage />} />
         </Route>
       </Routes>
     </BrowserRouter>
