@@ -14,6 +14,7 @@ import WayangEdit from './admin/WayangEdit'
 import GolonganManage from './admin/GolonganManage'
 import PenyimpananManage from './admin/PenyimpananManage'
 import WayangCerita from './admin/AdminCerita'
+import AuthOnly from './guards/AuthOnly'
 
 export default function App() {
   return (
@@ -34,12 +35,15 @@ export default function App() {
 
         {/* ── Admin dashboard ── */}
         <Route path="/admin" element={<AdminLayout />}>
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="wayang/create" element={<WayangCreate />} />
-          <Route path="wayang/:id/edit" element={<WayangEdit />} />
-          <Route path="cerita" element={<WayangCerita />} />
-          <Route path="penyimpanan" element={<PenyimpananManage />} />
-          <Route path="golongan" element={<GolonganManage />} />
+         <Route element={<AuthOnly/>}>
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="wayang/create" element={<WayangCreate />} />
+              <Route path="wayang/:id/edit" element={<WayangEdit />} />
+              <Route path="cerita" element={<WayangCerita />} />
+              <Route path="penyimpanan" element={<PenyimpananManage />} />
+              <Route path="golongan" element={<GolonganManage />} />
+         </Route>
+     
         </Route>
       </Routes>
     </BrowserRouter>
