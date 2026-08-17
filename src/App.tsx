@@ -12,8 +12,9 @@ import AdminDashboard from './admin/AdminDashboard'
 import WayangCreate from './admin/WayangCreate'
 import WayangEdit from './admin/WayangEdit'
 import GolonganManage from './admin/GolonganManage'
-import PenyimpananManage from './admin/PenyimpananManage'
+import PenyimpananManage from './admin/kotakManage'
 import WayangCerita from './admin/AdminCerita'
+import PenyimpananCreate from './admin/KotakCreate'
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="cerita" element={<WayangCerita />} />
           <Route path="penyimpanan" element={<PenyimpananManage />} />
           <Route path="golongan" element={<GolonganManage />} />
+          <Route path="penyimpanan/create" element={<PenyimpananCreate />} />
         </Route>
       </Routes>
     </BrowserRouter>
