@@ -12,12 +12,14 @@ import AdminDashboard from './admin/AdminDashboard'
 import WayangCreate from './admin/WayangCreate'
 import WayangEdit from './admin/WayangEdit'
 import GolonganManage from './admin/GolonganManage'
-import PenyimpananManage from './admin/PenyimpananManage'
+import PenyimpananManage from './admin/kotakManage'
 import WayangCerita from './admin/AdminCerita'
+
 import AuthOnly from './guards/AuthOnly'
 import AdminPeminjaman from './admin/PeminjamanManage'
 import AdminPeminjamanCreate from './admin/PeminjamanCreate'
 import AdminPeminjamanEdit from './admin/PeminjamanEdit'
+
 
 export default function App() {
   return (
