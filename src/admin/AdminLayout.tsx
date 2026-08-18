@@ -1,5 +1,7 @@
-import {useState} from 'react'
-import { NavLink, Outlet, Link } from 'react-router-dom'
+import { useState } from 'react'
+import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom'
+import api from '../lib/api'
+
 
 const sidebarLinks = [
   {
@@ -45,12 +47,46 @@ const sidebarLinks = [
   <path d="M12 22V12" />
 </svg>
     ),
+  },
+  {
+    to: '/admin/peminjaman',
+    label: 'Peminjaman',
+    icon: (
+<svg
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  strokeWidth="2"
+  strokeLinecap="round"
+  strokeLinejoin="round"
+  className="w-5 h-5 shrink-0"
+>
+  <rect x="4" y="3" width="16" height="18" rx="2" />
+  <path d="M9 3V2h6v1" />
+  <path d="M8 8h8" />
+  <path d="M8 12h5" />
+  <path d="M8 16h3" />
+  <path d="M16 12v5" />
+  <path d="m13.5 14.5 2.5 2.5 2.5-2.5" />
+</svg>
+    ),
   }
 ]
 
 export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false)
+const navigate = useNavigate()
 
+const handleLogout = async () => {
+  try {
+    await api.post('/auth/logout')
+  } catch {
+    // Tetap logout dari sisi React meskipun request gagal
+  } finally {
+    sessionStorage.removeItem('isLogin')
+    navigate('/admin/login', { replace: true })
+  }
+}
   return (
     <div className="flex min-h-screen font-sans bg-slate-100 text-slate-800">
       {/* ── Sidebar ── */}
@@ -100,21 +136,59 @@ export default function AdminLayout() {
         </nav>
 
         {/* Footer */}
-        <div className="px-6 pt-6 border-t border-white/10">
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-slate-400 text-[0.85rem] no-underline hover:text-white transition-colors"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-            {!collapsed && (
-              <>
-              <span>Kembali ke Website</span>
-              </>
-            )}
-          </Link>
-        </div>
+       {/* Footer */}
+<div className="px-6 pt-6 border-t border-white/10 space-y-4">
+
+ 
+
+  {/* Logout */}
+  <button
+    onClick={handleLogout}
+    className="w-full flex items-center gap-2 text-red-400 text-[0.85rem] bg-transparent border-none cursor-pointer hover:text-red-300 transition-colors p-0"
+  >
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+
+    {!collapsed && (
+      <span>Logout</span>
+    )}
+  </button>
+   {/* Kembali ke Website */}
+  <Link
+    to="/"
+    className="flex items-center gap-2 text-slate-400 text-[0.85rem] no-underline hover:text-white transition-colors"
+  >
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M15 18l-6-6 6-6" />
+    </svg>
+
+    {!collapsed && (
+      <span>Kembali ke Website</span>
+    )}
+  </Link>
+
+</div>
       </aside>
 
       {/* ── Main ── */}
