@@ -15,6 +15,9 @@ import GolonganManage from './admin/GolonganManage'
 import PenyimpananManage from './admin/PenyimpananManage'
 import WayangCerita from './admin/AdminCerita'
 import AuthOnly from './guards/AuthOnly'
+import AdminPeminjaman from './admin/PeminjamanManage'
+import AdminPeminjamanCreate from './admin/PeminjamanCreate'
+import AdminPeminjamanEdit from './admin/PeminjamanEdit'
 
 export default function App() {
   return (
@@ -42,6 +45,12 @@ export default function App() {
               <Route path="cerita" element={<WayangCerita />} />
               <Route path="penyimpanan" element={<PenyimpananManage />} />
               <Route path="golongan" element={<GolonganManage />} />
+              <Route path="peminjaman" element={<AdminPeminjaman />} />
+              <Route path="peminjaman/create" element={<AdminPeminjamanCreate />} />
+              <Route
+  path="peminjaman/:id/edit"
+  element={<AdminPeminjamanEdit />}
+/>
          </Route>
      
         </Route>
