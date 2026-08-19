@@ -1,21 +1,38 @@
-import { useState } from "react"
+import { useEffect, useState, type ChangeEvent } from "react"
 import api from '../lib/api' 
+import { useParams } from "react-router-dom"
 
 interface PenyimpananFormModalProps {
-  onClose: () => void
-  onSuccess: () => void
+    onClose: () => void
+    onSuccess: () => void 
 }
 
-export default function KotakCreate({ onClose, onSuccess}: PenyimpananFormModalProps) {
-  const [namaKotak, setNamaKotak] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
+interface Penyimpanan {
+    id: number
+    namaKotak: string
+}
 
-  const handleSubmit = async (e: {preventDefault(): void }) => {
+interface FormState {
+    namaKotak: string
+}
+
+export default function KotakEdit({onClose, onSuccess}: PenyimpananFormModalProps) {
+    const { id } = useParams()
+    const [form, setForm] = useState<FormState>({
+        namaKotak: ''
+    })
+    const [namaKotak, setNamaKotak] = useState('')
+    const [submitting, setSubmitting] = useState(false)
+    const [error, setError] = useState('')
+    const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
+    const [submitError, setSubmitError] = useState('')
+    const [Loading, setLoading] = useState(true)
+
+    const handleSubmit = async (e: {preventDefault(): void }) => {
     e.preventDefault()
     setSubmitting(true)
     try {
-      await api.post('/penyimpanan', { namaKotak })
+      await api.patch(`/penyimpanan/${id}`, { namaKotak })
       onSuccess()
       onClose()
     } catch {
@@ -23,6 +40,29 @@ export default function KotakCreate({ onClose, onSuccess}: PenyimpananFormModalP
     } finally {
       setSubmitting(false)
     }
+  }
+
+    useEffect(() => {
+        api.get(`penyimpanan/${id}`).then(res => {
+            const p: Penyimpanan = res.data.data
+            setNamaKotak(p.namaKotak)
+            setForm({
+                namaKotak: String(p.namaKotak)
+            })
+        })
+        .catch(() => setSubmitError('Gagall memuat data.'))
+        .finally(() => setLoading(false))
+    }, [id])
+
+      const set = (field: keyof FormState) =>
+        (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+          setForm(prev => ({ ...prev, [field]: e.target.value }))
+
+        const validate = () => {
+    const err: Partial<Record<keyof FormState, string>> = {}
+    if (!form.namaKotak.trim()) err.namaKotak = 'Nama wajib diisi.'
+    setErrors(err)
+    return Object.keys(err).length === 0
   }
 
   return (
