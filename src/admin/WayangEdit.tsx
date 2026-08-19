@@ -4,6 +4,11 @@ import api, { BASE_URL } from '../lib/api'
 
 const KONDISI_LIST = ['Baik', 'Cukup Baik', 'Perlu Restorasi', 'Rusak']
 const DAERAH_ASAL_LIST = ['Yogyakarta', 'Surakarta', 'Kedu']
+const TIPE_GOLONGAN_LIST = [
+  { value: 'SIMPINGAN_KIRI', label: 'Simpingan Kiri' },
+  { value: 'SIMPINGAN_KANAN', label: 'Simpingan Kanan' },
+  { value: 'DUDHAHAN', label: 'Dudhahan' },
+]
 
 interface Golongan {
   id: number
@@ -32,6 +37,7 @@ interface WayangDetail {
   cerita?: string
   kondisi?: string
   golonganId: number
+  golongan: { id: number; namaGolongan: string; tipeGolongan: string }
   penyimpananId: number
   media: MediaWayang[]
 }
@@ -42,6 +48,7 @@ interface FormState {
   deskripsi: string
   cerita: string
   kondisi: string
+  tipeGolongan: string
   golonganId: string
   penyimpananId: string
 }
@@ -53,7 +60,7 @@ export default function WayangEdit() {
 
   const [noWayang, setNoWayang] = useState('')
   const [form, setForm] = useState<FormState>({
-    nama: '', daerah: '', deskripsi: '', cerita: '', kondisi: '', golonganId: '', penyimpananId: '',
+    nama: '', daerah: '', deskripsi: '', cerita: '', kondisi: '', tipeGolongan: '', golonganId: '', penyimpananId: '',
   })
   const [golonganList, setGolonganList] = useState<Golongan[]>([])
   const [penyimpananList, setPenyimpananList] = useState<Penyimpanan[]>([])
@@ -78,6 +85,7 @@ export default function WayangEdit() {
           deskripsi: w.deskripsi ?? '',
           cerita: w.cerita ?? '',
           kondisi: w.kondisi ?? '',
+          tipeGolongan: w.golongan.tipeGolongan,
           golonganId: String(w.golonganId),
           penyimpananId: String(w.penyimpananId),
         })
@@ -91,10 +99,13 @@ export default function WayangEdit() {
     (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
       setForm(prev => ({ ...prev, [field]: e.target.value }))
 
+  const filteredGolongan = golonganList.filter(g => g.tipeGolongan === form.tipeGolongan)
+
   const validate = () => {
     const err: Partial<Record<keyof FormState, string>> = {}
     if (!form.nama.trim()) err.nama = 'Nama wajib diisi.'
-    if (!form.golonganId) err.golonganId = 'Golongan wajib dipilih.'
+    if (!form.tipeGolongan) err.tipeGolongan = 'Tipe golongan wajib dipilih.'
+    if (!form.golonganId) err.golonganId = 'Nama golongan wajib dipilih.'
     if (!form.penyimpananId) err.penyimpananId = 'Kotak penyimpanan wajib dipilih.'
     setErrors(err)
     return Object.keys(err).length === 0
@@ -104,6 +115,10 @@ export default function WayangEdit() {
     await api.delete(`/wayang/media/${mediaId}`)
     setExistingMedia(prev => prev.filter(m => m.id !== mediaId))
   }
+
+  // Ganti tipe golongan → reset pilihan nama golongan, karena daftarnya ikut berubah
+  const handleTipeGolonganChange = (e: ChangeEvent<HTMLSelectElement>) =>
+    setForm(prev => ({ ...prev, tipeGolongan: e.target.value, golonganId: '' }))
 
   const handleSubmit = async (e: { preventDefault(): void }) => {
     e.preventDefault()
@@ -183,12 +198,23 @@ export default function WayangEdit() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Golongan <span className="text-red-400">*</span></label>
-              <select value={form.golonganId} onChange={set('golonganId')}
+              <label className="block text-sm font-medium text-slate-700 mb-2">Tipe Golongan <span className="text-red-400">*</span></label>
+              <select value={form.tipeGolongan} onChange={handleTipeGolonganChange}
                 className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition bg-white">
-                <option value="">Pilih Golongan</option>
-                {golonganList.map(g => (
-                  <option key={g.id} value={g.id}>{g.namaGolongan} ({g.tipeGolongan})</option>
+                <option value="">Pilih Tipe Golongan</option>
+                {TIPE_GOLONGAN_LIST.map(t => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+              {errors.tipeGolongan && <p className="text-red-500 text-xs mt-1">{errors.tipeGolongan}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Nama Golongan <span className="text-red-400">*</span></label>
+              <select value={form.golonganId} onChange={set('golonganId')} disabled={!form.tipeGolongan}
+                className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition bg-white disabled:bg-slate-50 disabled:text-slate-400">
+                <option value="">{form.tipeGolongan ? 'Pilih Nama Golongan' : 'Pilih tipe golongan dulu'}</option>
+                {filteredGolongan.map(g => (
+                  <option key={g.id} value={g.id}>{g.namaGolongan}</option>
                 ))}
               </select>
               {errors.golonganId && <p className="text-red-500 text-xs mt-1">{errors.golonganId}</p>}
