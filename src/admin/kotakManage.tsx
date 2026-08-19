@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Link } from 'react-router-dom'
 import api, { BASE_URL } from '../lib/api' 
 import PenyimpananFormModal from "./KotakCreate"
+import KotakEdit from "./KotakEdit"
 
   interface kotakWayang {
     id: number
@@ -14,6 +15,7 @@ export default function KotakManage() {
   const [Loading, SetLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [error, setError] = useState('')
+  const [editingId, setEditingId] = useState<number | null>(null)
 
   const fetchKotak = async () => {
     try {
@@ -54,6 +56,14 @@ export default function KotakManage() {
         onSuccess={fetchKotak}/>
       )}
 
+      {editingId !== null && (
+  <KotakEdit
+    id={editingId}
+    onClose={() => setEditingId(null)}
+    onSuccess={fetchKotak}
+  />
+)}
+
       <div className="flex items-center justify-between mb-8">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Kelola Kotak Penyimpanan</h1>
@@ -78,7 +88,7 @@ export default function KotakManage() {
           <table className="w-full border-collapse">
             <thead>
               <tr>
-                {['No', 'Nama Penyimpanan', 'Jumlah Wayang'].map(h => (
+                {['No', 'Nama Penyimpanan', 'Jumlah Wayang', 'Aksi'].map(h => (
                   <th key={h} className="bg-slate-50 px-5 py-[0.85rem] text-left text-[0.8rem] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                     {h}
                   </th>
@@ -89,17 +99,16 @@ export default function KotakManage() {
             <tbody>
               {KotakList.map((k, idx) => {
                 return (
-                  <tr key={k.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-5 py-4 text-[0.9rem] text-slate-500 border-b border-slate-100">{k.namaKotak}</td>
+                  <tr key={k.id} className="hover:bg-namaKotakslate-50 transition-colors">
+                    <td className="px-5 py-4 text-[0.9rem] text-slate-500 border-b border-slate-100">{idx + 1}</td>
+                    <td className="px-5 py-4 text-[0.9rem] text-slate-800 border-b border-slate-100 font-medium">{k.namaKotak}</td>
                     <td className="px-5 py-4 text-[0.9rem] text-slate-500 border-b border-slate-100">{k.wayang.length}</td>
                     <td className="px-5 py-4 border-b border-slate-100">
                       <div className="flex gap-2">
-                        <Link
-                        to={`/admin/penyimpanan/${k.id}/edit`}
-                        className="inline-flex items-center px-3 py-[0.4rem] bg-amber-500 hover:bg-amber-600 text-white text-[0.8rem] font-medium rounded-lg no-underline transition-colors"
-                        >
+                        <button onClick={() => setEditingId(k.id)}
+                        className="inline-flex items-center px-3 py-[0.4rem] bg-amber-500 hover:bg-amber-600 text-white text-[0.8rem] font-medium rounded-lg cursor-pointer border-none transition-colors">
                           Edit
-                        </Link>
+                          </button>
                         <button
                         onClick={() => handleDelete(k.id)}
                         className="inline-flex items-center px-3 py-[0.4rem] bg-red-500 hover:bg-red-600 text-white text-[0.8rem] font-medium rounded-lg cursor-pointer border-none transition-colors"

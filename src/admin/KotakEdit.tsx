@@ -1,10 +1,10 @@
 import { useEffect, useState, type ChangeEvent } from "react"
-import api from '../lib/api' 
-import { useParams } from "react-router-dom"
+import api from '../lib/api'
 
 interface PenyimpananFormModalProps {
+    id: number
     onClose: () => void
-    onSuccess: () => void 
+    onSuccess: () => void
 }
 
 interface Penyimpanan {
@@ -16,8 +16,7 @@ interface FormState {
     namaKotak: string
 }
 
-export default function KotakEdit({onClose, onSuccess}: PenyimpananFormModalProps) {
-    const { id } = useParams()
+export default function KotakEdit({id, onClose, onSuccess}: PenyimpananFormModalProps) {
     const [form, setForm] = useState<FormState>({
         namaKotak: ''
     })
@@ -50,7 +49,7 @@ export default function KotakEdit({onClose, onSuccess}: PenyimpananFormModalProp
                 namaKotak: String(p.namaKotak)
             })
         })
-        .catch(() => setSubmitError('Gagall memuat data.'))
+        .catch(() => setSubmitError('Gagal memuat data.'))
         .finally(() => setLoading(false))
     }, [id])
 
@@ -68,7 +67,7 @@ export default function KotakEdit({onClose, onSuccess}: PenyimpananFormModalProp
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-white rounded-xl shadown-xl p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
-        <h2 className="text-lg font-bold text-slate-900 mb-4">Tambah Penyimpanan</h2>
+        <h2 className="text-lg font-bold text-slate-900 mb-4">Edit Penyimpanan</h2>
           {error && (
             <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
               {error}
