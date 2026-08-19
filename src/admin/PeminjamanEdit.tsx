@@ -7,7 +7,6 @@ import {
 import axios from 'axios'
 import api from '../lib/api'
 
-
 interface Wayang {
   id: number
   nama: string
@@ -16,19 +15,16 @@ interface Wayang {
 
 interface Peminjaman {
   id: number
-
   peminjam: {
     id: number
     namaPeminjam: string
     alamat: string
     noHp: string
   }
-
   wayang: {
     id: number
     nama: string
   }
-
   tanggalPinjam: string
   tanggalKembali: string
   keterangan?: string | null
@@ -43,6 +39,7 @@ interface FormData {
   tanggalPinjam: string
   tanggalKembali: string
   keterangan: string
+  status: 'DIPINJAM' | 'DIKEMBALIKAN'
 }
 
 interface BackendErrorResponse {
@@ -54,11 +51,10 @@ interface BackendErrorResponse {
 
 const getErrorMessage = (
   error: unknown,
-  defaultMessage: string
+  defaultMessage: string,
 ): string => {
   if (axios.isAxiosError<BackendErrorResponse>(error)) {
-    const message =
-      error.response?.data?.message
+    const message = error.response?.data?.message
 
     if (Array.isArray(message)) {
       return message.join(', ')
@@ -76,12 +72,9 @@ const getErrorMessage = (
   return defaultMessage
 }
 
-
-
 export default function AdminPeminjamanEdit() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-
 
   const [wayangList, setWayangList] =
     useState<Wayang[]>([])
@@ -95,6 +88,7 @@ export default function AdminPeminjamanEdit() {
       tanggalPinjam: '',
       tanggalKembali: '',
       keterangan: '',
+      status: 'DIPINJAM',
     })
 
   const [loading, setLoading] =
@@ -109,9 +103,8 @@ export default function AdminPeminjamanEdit() {
   const [error, setError] =
     useState<string>('')
 
- 
   const formatDateInput = (
-    tanggal: string
+    tanggal: string,
   ): string => {
     if (!tanggal) {
       return ''
@@ -126,18 +119,12 @@ export default function AdminPeminjamanEdit() {
     return tanggal.substring(0, 10)
   }
 
-
   useEffect(() => {
     const fetchWayang = async () => {
       try {
         setLoadingWayang(true)
 
         const res = await api.get('/wayang')
-
-        console.log(
-          'Response wayang:',
-          res.data
-        )
 
         const wayangData =
           res.data?.data?.data
@@ -148,20 +135,20 @@ export default function AdminPeminjamanEdit() {
           setWayangList([])
 
           setError(
-            'Format data wayang dari server tidak sesuai.'
+            'Format data wayang dari server tidak sesuai.',
           )
         }
       } catch (error: unknown) {
         console.error(
           'Error fetch wayang:',
-          error
+          error,
         )
 
         setError(
           getErrorMessage(
             error,
-            'Gagal memuat daftar wayang.'
-          )
+            'Gagal memuat daftar wayang.',
+          ),
         )
       } finally {
         setLoadingWayang(false)
@@ -171,13 +158,11 @@ export default function AdminPeminjamanEdit() {
     fetchWayang()
   }, [])
 
-
-
   useEffect(() => {
     const fetchPeminjaman = async () => {
       if (!id) {
         setError(
-          'ID peminjaman tidak ditemukan.'
+          'ID peminjaman tidak ditemukan.',
         )
 
         setLoading(false)
@@ -190,12 +175,7 @@ export default function AdminPeminjamanEdit() {
         setError('')
 
         const res = await api.get(
-          `/peminjaman/${id}`
-        )
-
-        console.log(
-          'Response peminjaman:',
-          res.data
+          `/peminjaman/${id}`,
         )
 
         const data =
@@ -205,7 +185,7 @@ export default function AdminPeminjamanEdit() {
 
         if (!data) {
           setError(
-            'Data peminjaman tidak ditemukan.'
+            'Data peminjaman tidak ditemukan.',
           )
 
           return
@@ -217,42 +197,43 @@ export default function AdminPeminjamanEdit() {
             '',
 
           alamat:
-            data.peminjam?.alamat ??
-            '',
+            data.peminjam?.alamat ?? '',
 
           noHp:
-            data.peminjam?.noHp ??
-            '',
+            data.peminjam?.noHp ?? '',
 
           wayangId:
             String(
-              data.wayang?.id ?? ''
+              data.wayang?.id ?? '',
             ),
 
           tanggalPinjam:
             formatDateInput(
-              data.tanggalPinjam
+              data.tanggalPinjam,
             ),
 
           tanggalKembali:
             formatDateInput(
-              data.tanggalKembali
+              data.tanggalKembali,
             ),
 
           keterangan:
             data.keterangan ?? '',
+
+          status:
+            data.status ?? 'DIPINJAM',
         })
       } catch (error: unknown) {
         console.error(
           'Error fetch peminjaman:',
-          error
+          error,
         )
 
         setError(
           getErrorMessage(
             error,
-            'Gagal memuat data peminjaman.'
-          )
+            'Gagal memuat data peminjaman.',
+          ),
         )
       } finally {
         setLoading(false)
@@ -262,13 +243,12 @@ export default function AdminPeminjamanEdit() {
     fetchPeminjaman()
   }, [id])
 
-
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement |
       HTMLTextAreaElement |
       HTMLSelectElement
-    >
+    >,
   ) => {
     const {
       name,
@@ -285,107 +265,96 @@ export default function AdminPeminjamanEdit() {
     }
   }
 
-  
-
   const validateForm = (): boolean => {
-
     if (
       !formData.namaPeminjam.trim()
     ) {
       setError(
-        'Nama peminjam wajib diisi.'
+        'Nama peminjam wajib diisi.',
       )
 
       return false
     }
 
-
-    if (
-      !formData.alamat.trim()
-    ) {
+    if (!formData.alamat.trim()) {
       setError(
-        'Alamat wajib diisi.'
+        'Alamat wajib diisi.',
       )
 
       return false
     }
 
-
-    if (
-      !formData.noHp.trim()
-    ) {
+    if (!formData.noHp.trim()) {
       setError(
-        'Nomor HP wajib diisi.'
+        'Nomor HP wajib diisi.',
       )
 
       return false
     }
-
 
     if (!formData.wayangId) {
       setError(
-        'Silakan pilih wayang.'
+        'Silakan pilih wayang.',
       )
 
       return false
     }
 
-    
-
-    if (
-      !formData.tanggalPinjam
-    ) {
+    if (!formData.tanggalPinjam) {
       setError(
-        'Tanggal pinjam wajib diisi.'
+        'Tanggal pinjam wajib diisi.',
       )
 
       return false
     }
 
-    if (
-      !formData.tanggalKembali
-    ) {
+    if (!formData.tanggalKembali) {
       setError(
-        'Tanggal kembali wajib diisi.'
+        'Tanggal kembali wajib diisi.',
       )
 
       return false
     }
 
+    if (!formData.status) {
+      setError(
+        'Status peminjaman wajib dipilih.',
+      )
 
+      return false
+    }
 
     const tanggalPinjam =
       new Date(
-        `${formData.tanggalPinjam}T00:00:00`
+        `${formData.tanggalPinjam}T00:00:00`,
       )
 
     const tanggalKembali =
       new Date(
-        `${formData.tanggalKembali}T00:00:00`
+        `${formData.tanggalKembali}T00:00:00`,
       )
 
     if (
       Number.isNaN(
-        tanggalPinjam.getTime()
+        tanggalPinjam.getTime(),
       ) ||
       Number.isNaN(
-        tanggalKembali.getTime()
+        tanggalKembali.getTime(),
       )
     ) {
       setError(
-        'Format tanggal tidak valid.'
+        'Format tanggal tidak valid.',
       )
 
       return false
     }
-
 
     if (
       tanggalKembali <=
       tanggalPinjam
     ) {
       setError(
-        'Tanggal kembali harus setelah tanggal pinjam.'
+        'Tanggal kembali harus setelah tanggal pinjam.',
       )
 
       return false
@@ -394,35 +363,27 @@ export default function AdminPeminjamanEdit() {
     return true
   }
 
-
   const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
+    e: React.FormEvent<HTMLFormElement>,
   ) => {
     e.preventDefault()
 
     setError('')
 
-
-
     if (!validateForm()) {
       return
     }
 
-
-
     if (!id) {
       setError(
-        'ID peminjaman tidak ditemukan.'
+        'ID peminjaman tidak ditemukan.',
       )
 
       return
     }
 
-
-
     try {
       setLoadingSubmit(true)
-
 
       const payload = {
         namaPeminjam:
@@ -447,46 +408,41 @@ export default function AdminPeminjamanEdit() {
           formData.keterangan.trim()
             ? formData.keterangan.trim()
             : undefined,
-      }
 
-      console.log(
-        'Payload update peminjaman:',
-        payload
-      )
+        status:
+          formData.status,
+      }
 
       await api.patch(
         `/peminjaman/${id}`,
-        payload
+        payload,
       )
 
       navigate(
-        '/admin/peminjaman'
+        '/admin/peminjaman',
       )
     } catch (error: unknown) {
       console.error(
         'Error update peminjaman:',
-        error
+        error,
       )
 
       setError(
         getErrorMessage(
           error,
-          'Gagal memperbarui data peminjaman.'
-        )
+          'Gagal memperbarui data peminjaman.',
+        ),
       )
     } finally {
       setLoadingSubmit(false)
     }
   }
 
-
   if (loading) {
     return (
       <div className="w-full min-h-[70vh] flex items-center justify-center">
         <div className="text-center">
-
           <div className="w-12 h-12 mx-auto mb-4 rounded-2xl bg-blue-50 flex items-center justify-center">
-
             <svg
               className="animate-spin text-blue-600"
               width="24"
@@ -505,7 +461,6 @@ export default function AdminPeminjamanEdit() {
 
               <path d="M21 12a9 9 0 0 1-9 9" />
             </svg>
-
           </div>
 
           <p className="text-sm font-semibold text-slate-700">
@@ -515,25 +470,18 @@ export default function AdminPeminjamanEdit() {
           <p className="text-xs text-slate-400 mt-1">
             Mohon tunggu sebentar
           </p>
-
         </div>
       </div>
     )
   }
 
-
-
   return (
     <div className="w-full px-6 py-8 lg:px-10 xl:px-14">
-
-
       <div className="w-full mb-8">
-
         <Link
           to="/admin/peminjaman"
           className="inline-flex items-center gap-2 mb-6 text-sm font-semibold text-slate-500 hover:text-blue-600 no-underline transition-colors"
         >
-
           <svg
             width="17"
             height="17"
@@ -555,13 +503,10 @@ export default function AdminPeminjamanEdit() {
           </svg>
 
           Kembali ke Peminjaman
-
         </Link>
 
         <div className="flex items-center gap-5">
-
           <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center">
-
             <svg
               width="29"
               height="29"
@@ -574,16 +519,12 @@ export default function AdminPeminjamanEdit() {
               className="text-amber-600"
             >
               <path d="M12 20h9" />
-
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
             </svg>
-
           </div>
 
           <div>
-
             <div className="flex items-center gap-3">
-
               <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">
                 Edit Peminjaman
               </h1>
@@ -591,27 +532,19 @@ export default function AdminPeminjamanEdit() {
               <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100 text-xs font-bold">
                 EDIT
               </span>
-
             </div>
 
             <p className="text-sm text-slate-500 mt-2">
               Perbarui informasi peminjaman
               wayang yang sudah tersimpan.
             </p>
-
           </div>
-
         </div>
-
       </div>
-
- 
 
       {error && (
         <div className="w-full mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-5 py-4">
-
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-
             <svg
               width="15"
               height="15"
@@ -635,11 +568,9 @@ export default function AdminPeminjamanEdit() {
                 y2="18"
               />
             </svg>
-
           </div>
 
           <div>
-
             <p className="text-sm font-bold text-red-800">
               Terjadi kesalahan
             </p>
@@ -647,27 +578,17 @@ export default function AdminPeminjamanEdit() {
             <p className="text-sm text-red-700 mt-1">
               {error}
             </p>
-
           </div>
-
         </div>
       )}
-
- 
 
       <form
         onSubmit={handleSubmit}
         className="w-full bg-white border border-slate-200 rounded-2xl shadow-[0_10px_40px_rgba(15,23,42,0.07)] overflow-hidden"
       >
-
-
-
         <div className="px-8 lg:px-10 py-7 border-b border-slate-100">
-
           <div className="flex items-center gap-4">
-
             <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
-
               <svg
                 width="21"
                 height="21"
@@ -687,11 +608,9 @@ export default function AdminPeminjamanEdit() {
                   r="4"
                 />
               </svg>
-
             </div>
 
             <div>
-
               <h2 className="text-lg font-bold text-slate-800">
                 Informasi Peminjam
               </h2>
@@ -700,21 +619,13 @@ export default function AdminPeminjamanEdit() {
                 Perbarui informasi orang yang
                 melakukan peminjaman.
               </p>
-
             </div>
-
           </div>
-
         </div>
 
         <div className="px-8 lg:px-10 py-9">
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
-
-            {/* NAMA */}
-
             <div className="lg:col-span-2">
-
               <label
                 htmlFor="namaPeminjam"
                 className="block text-sm font-bold text-slate-700 mb-2"
@@ -724,7 +635,6 @@ export default function AdminPeminjamanEdit() {
                 <span className="text-red-500 ml-1">
                   *
                 </span>
-
               </label>
 
               <input
@@ -738,13 +648,9 @@ export default function AdminPeminjamanEdit() {
                 placeholder="Masukkan nama lengkap peminjam"
                 className="w-full px-4 py-3.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
               />
-
             </div>
 
-            {/* NO HP */}
-
             <div>
-
               <label
                 htmlFor="noHp"
                 className="block text-sm font-bold text-slate-700 mb-2"
@@ -754,7 +660,6 @@ export default function AdminPeminjamanEdit() {
                 <span className="text-red-500 ml-1">
                   *
                 </span>
-
               </label>
 
               <input
@@ -766,13 +671,9 @@ export default function AdminPeminjamanEdit() {
                 placeholder="081234567890"
                 className="w-full px-4 py-3.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
               />
-
             </div>
 
-            {/* ALAMAT */}
-
             <div>
-
               <label
                 htmlFor="alamat"
                 className="block text-sm font-bold text-slate-700 mb-2"
@@ -782,7 +683,6 @@ export default function AdminPeminjamanEdit() {
                 <span className="text-red-500 ml-1">
                   *
                 </span>
-
               </label>
 
               <input
@@ -794,20 +694,13 @@ export default function AdminPeminjamanEdit() {
                 placeholder="Masukkan alamat peminjam"
                 className="w-full px-4 py-3.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
               />
-
             </div>
-
           </div>
-
         </div>
 
-
         <div className="px-8 lg:px-10 py-7 border-t border-b border-slate-100">
-
           <div className="flex items-center gap-4">
-
             <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center">
-
               <svg
                 width="21"
                 height="21"
@@ -848,34 +741,24 @@ export default function AdminPeminjamanEdit() {
                   y2="10"
                 />
               </svg>
-
             </div>
 
             <div>
-
               <h2 className="text-lg font-bold text-slate-800">
                 Detail Peminjaman
               </h2>
 
               <p className="text-sm text-slate-400 mt-1">
-                Perbarui wayang dan periode
-                peminjaman.
+                Perbarui wayang, status, dan
+                periode peminjaman.
               </p>
-
             </div>
-
           </div>
-
         </div>
 
         <div className="px-8 lg:px-10 py-9">
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
-
-            {/* WAYANG */}
-
             <div className="lg:col-span-2">
-
               <label
                 htmlFor="wayangId"
                 className="block text-sm font-bold text-slate-700 mb-2"
@@ -885,7 +768,6 @@ export default function AdminPeminjamanEdit() {
                 <span className="text-red-500 ml-1">
                   *
                 </span>
-
               </label>
 
               <select
@@ -896,7 +778,6 @@ export default function AdminPeminjamanEdit() {
                 disabled={loadingWayang}
                 className="w-full px-4 py-3.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 disabled:bg-slate-50 disabled:text-slate-400"
               >
-
                 <option value="">
                   {loadingWayang
                     ? 'Memuat daftar wayang...'
@@ -915,9 +796,8 @@ export default function AdminPeminjamanEdit() {
                         ? `${wayang.noWayang} — ${wayang.nama}`
                         : wayang.nama}
                     </option>
-                  )
+                  ),
                 )}
-
               </select>
 
               {!loadingWayang &&
@@ -927,13 +807,49 @@ export default function AdminPeminjamanEdit() {
                     wayang tersedia.
                   </p>
                 )}
-
             </div>
 
-            {/* TANGGAL PINJAM */}
+            <div className="lg:col-span-2">
+              <label
+                htmlFor="status"
+                className="block text-sm font-bold text-slate-700 mb-2"
+              >
+                Status Peminjaman
+
+                <span className="text-red-500 ml-1">
+                  *
+                </span>
+              </label>
+
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className={`w-full px-4 py-3.5 rounded-xl border bg-white text-sm outline-none transition-all focus:ring-4 ${
+                  formData.status ===
+                  'DIKEMBALIKAN'
+                    ? 'border-green-200 text-green-700 focus:border-green-500 focus:ring-green-50'
+                    : 'border-blue-200 text-blue-700 focus:border-blue-500 focus:ring-blue-50'
+                }`}
+              >
+                <option value="DIPINJAM">
+                  Dipinjam
+                </option>
+
+                <option value="DIKEMBALIKAN">
+                  Dikembalikan
+                </option>
+              </select>
+
+              <p className="text-xs text-slate-400 mt-2">
+                Pilih "Dikembalikan" jika
+                wayang sudah dikembalikan oleh
+                peminjam.
+              </p>
+            </div>
 
             <div>
-
               <label
                 htmlFor="tanggalPinjam"
                 className="block text-sm font-bold text-slate-700 mb-2"
@@ -943,7 +859,6 @@ export default function AdminPeminjamanEdit() {
                 <span className="text-red-500 ml-1">
                   *
                 </span>
-
               </label>
 
               <input
@@ -956,13 +871,9 @@ export default function AdminPeminjamanEdit() {
                 onChange={handleChange}
                 className="w-full px-4 py-3.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
               />
-
             </div>
 
-            {/* TANGGAL KEMBALI */}
-
             <div>
-
               <label
                 htmlFor="tanggalKembali"
                 className="block text-sm font-bold text-slate-700 mb-2"
@@ -972,7 +883,6 @@ export default function AdminPeminjamanEdit() {
                 <span className="text-red-500 ml-1">
                   *
                 </span>
-
               </label>
 
               <input
@@ -989,13 +899,9 @@ export default function AdminPeminjamanEdit() {
                 }
                 className="w-full px-4 py-3.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
               />
-
             </div>
 
-            {/* KETERANGAN */}
-
             <div className="lg:col-span-2">
-
               <label
                 htmlFor="keterangan"
                 className="block text-sm font-bold text-slate-700 mb-2"
@@ -1005,7 +911,6 @@ export default function AdminPeminjamanEdit() {
                 <span className="ml-2 text-xs font-normal text-slate-400">
                   Opsional
                 </span>
-
               </label>
 
               <textarea
@@ -1019,29 +924,19 @@ export default function AdminPeminjamanEdit() {
                 placeholder="Tambahkan keterangan atau catatan..."
                 className="w-full px-4 py-3.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 placeholder:text-slate-400 outline-none resize-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
               />
-
             </div>
-
           </div>
-
         </div>
 
-    
-
         <div className="px-8 lg:px-10 py-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-
           <div className="text-xs text-slate-400">
-
             <span className="text-red-500 font-bold">
               *
             </span>{' '}
-
             Field wajib diisi
-
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
-
             <Link
               to="/admin/peminjaman"
               className="flex-1 sm:flex-none text-center px-7 py-3 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:bg-slate-100 no-underline transition-colors"
@@ -1057,7 +952,6 @@ export default function AdminPeminjamanEdit() {
               }
               className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white text-sm font-bold border-none cursor-pointer disabled:cursor-not-allowed shadow-sm hover:shadow-md transition-all"
             >
-
               {loadingSubmit ? (
                 <>
                   <svg
@@ -1099,19 +993,12 @@ export default function AdminPeminjamanEdit() {
                   Simpan Perubahan
                 </>
               )}
-
             </button>
-
           </div>
-
         </div>
-
       </form>
 
-
-
       <div className="flex items-center justify-center gap-2 mt-5 pb-4 text-xs text-slate-400">
-
         <svg
           width="14"
           height="14"
@@ -1119,6 +1006,8 @@ export default function AdminPeminjamanEdit() {
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
           <circle
             cx="12"
@@ -1143,9 +1032,7 @@ export default function AdminPeminjamanEdit() {
 
         Pastikan perubahan data sudah benar
         sebelum disimpan.
-
       </div>
-
     </div>
   )
 }
