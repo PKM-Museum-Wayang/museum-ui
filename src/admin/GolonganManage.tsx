@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Link } from 'react-router-dom'
 import api from '../lib/api'
 import GolonganFormModal from "./GolonganCreate"
+import GolonganEditModal from "./GolonganEdit"
 
 interface GolonganWayang {
   id: number
@@ -15,6 +16,7 @@ export default function GolonganManage() {
   const [Loading, SetLoading] = useState(true)
   const [showModal, SetShowModal] = useState(false)
   const [Error, SetError] = useState('')
+  const [editingId, setEditingId] = useState<number | null>(null)
 
   const fetchGolongan = async () => {
     try {
@@ -55,6 +57,14 @@ export default function GolonganManage() {
         onSuccess={fetchGolongan}/>
       )}
 
+      {editingId !== null && (
+        <GolonganEditModal
+          id={editingId}
+          onClose={() => setEditingId(null)}
+          onSuccess={fetchGolongan}
+        />
+      )}
+
       <div className="flex items-center justify-between mb-8">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Kelola Golongan</h1>
@@ -93,12 +103,10 @@ export default function GolonganManage() {
                     <td className="px-5 py-4 text-[0.9rem] text-slate-500 border-b border-slate-100">{g._count.wayang}</td>
                     <td className="px-5 py-4 border-b border-slate-100">
                       <div className="flex gap-2">
-                        <Link
-                        to={`/admin/golongan/${g.id}/edit`}
-                        className="inline-flex items-center px-3 py-[0.4rem] bg-amber-500 hover:bg-amber-600 text-white text-[0.8rem] font-medium rounded-lg no-underline transition-colors"
-                        >
-                          Edit
-                        </Link>
+                        <button onClick={() => setEditingId(g.id)}
+                          className="inline-flex items-center px-3 py-[0.4rem] bg-amber-500 hover:bg-amber-600 text-white text-[0.8rem] font-medium rounded-lg cursor-pointer border-none transition-colors">
+                            Edit
+                        </button>
                         <button
                         onClick={() => handleDelete(g.id)}
                         className="inline-flex items-center px-3 py-[0.4rem] bg-red-500 hover:bg-red-600 text-white text-[0.8rem] font-medium rounded-lg cursor-pointer border-none transition-colors"
