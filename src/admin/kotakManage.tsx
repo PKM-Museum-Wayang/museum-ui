@@ -6,7 +6,7 @@ import PenyimpananFormModal from "./KotakCreate"
   interface kotakWayang {
     id: number
     namaKotak: string
-    _count: { wayang: number }
+    wayang: unknown[]
   }
 
 export default function KotakManage() {
@@ -38,7 +38,7 @@ export default function KotakManage() {
     }
   }
 
-  useEffect(() => { fetchKotak }, [])
+  useEffect(() => { fetchKotak() }, [])
 
   return (
     <>
@@ -91,7 +91,7 @@ export default function KotakManage() {
                 return (
                   <tr key={k.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-5 py-4 text-[0.9rem] text-slate-500 border-b border-slate-100">{k.namaKotak}</td>
-                    <td className="px-5 py-4 text-[0.9rem] text-slate-500 border-b border-slate-100">{k._count.wayang}</td>
+                    <td className="px-5 py-4 text-[0.9rem] text-slate-500 border-b border-slate-100">{k.wayang.length}</td>
                     <td className="px-5 py-4 border-b border-slate-100">
                       <div className="flex gap-2">
                         <Link
