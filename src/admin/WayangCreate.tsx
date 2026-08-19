@@ -5,9 +5,6 @@ import api from '../lib/api'
 const DAERAH_ASAL_LIST = ['Yogyakarta', 'Surakarta', 'Kedu']
 const KONDISI_LIST = ['Baik', 'Cukup Baik', 'Perlu Restorasi', 'Rusak']
 const GAYA_LIST = ['Purwo Yogyakarta', 'Purwo Surakarta', 'Purwo Kedu']
-const KOTAK_PENYIMPANAN = ['Kotak 1', 'Kotak 2', 'Kotak 3', 'Kotak 4', 'Kotak 5',
-  'Kotak 6', 'Kotak 7', 'Kotak 8', 'Kotak 9'
-]
 const TIPE_GOLONGAN_LIST = [
   { value: 'SIMPINGAN_KIRI', label: 'Simpingan Kiri' },
   { value: 'SIMPINGAN_KANAN', label: 'Simpingan Kanan' },
@@ -224,8 +221,8 @@ export default function WayangCreate() {
               <select value={form.penyimpananId} onChange={set('penyimpananId')}
                 className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition bg-white">
                 <option value="">Pilih Kotak</option>
-                {KOTAK_PENYIMPANAN.map(p => (
-                  <option key={p} value={p}>{p}</option>
+                {penyimpananList.map(p => (
+                  <option key={p.id} value={p.id}>{p.namaKotak}</option>
                 ))}
               </select>
               {errors.penyimpananId && <p className="text-red-500 text-xs mt-1">{errors.penyimpananId}</p>}
