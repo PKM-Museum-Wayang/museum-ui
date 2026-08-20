@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api, { BASE_URL } from '../lib/api'
 
+type TipeGolongan =
+  | 'SIMPINGAN_KIRI'
+  | 'SIMPINGAN_KANAN'
+  | 'DUDHAHAN'
+
 interface MediaWayang {
   id: number
   namaFile: string
@@ -14,6 +19,7 @@ interface Wayang {
   id: number
   noWayang: string
   nama: string
+  gaya?: string
   daerah?: string
   kondisi?: string
   golonganId: number
@@ -24,10 +30,7 @@ interface Wayang {
 interface Golongan {
   id: number
   namaGolongan: string
-  tipeGolongan:
-    | 'SIMPINGAN_KIRI'
-    | 'SIMPINGAN_KANAN'
-    | 'DUDHAHAN'
+  tipeGolongan: TipeGolongan
 }
 
 interface Penyimpanan {
@@ -45,6 +48,9 @@ interface Pagination {
 interface WayangResponse {
   data: Wayang[]
   pagination: Pagination
+  statistics?: {
+    totalWayang: number
+  }
 }
 
 export default function AdminDashboard() {
@@ -58,44 +64,55 @@ export default function AdminDashboard() {
   })
 
   const [golonganList, setGolonganList] = useState<Golongan[]>([])
-  const [penyimpananList, setPenyimpananList] = useState<Penyimpanan[]>(
-    [],
-  )
-
+  const [penyimpananList, setPenyimpananList] = useState<Penyimpanan[]>([])
 
   const [search, setSearch] = useState('')
-  const [tipeGolonganFilter, setTipeGolonganFilter] = useState('')
+
+  const [tipeGolonganFilter, setTipeGolonganFilter] =
+    useState<TipeGolongan | ''>('')
+
   const [golonganFilter, setGolonganFilter] = useState('')
   const [penyimpananFilter, setPenyimpananFilter] = useState('')
-
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
+  const normalizeTipeGolongan = (value: unknown): string => {
+    return String(value ?? '')
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, '_')
+  }
+
 
   const filteredGolongan = tipeGolonganFilter
-    ? golonganList.filter(
-        (golongan) =>
-          golongan.tipeGolongan === tipeGolonganFilter,
-      )
+    ? golonganList.filter((golongan) => {
+        const tipe = normalizeTipeGolongan(
+          golongan.tipeGolongan,
+        )
+
+        return tipe === tipeGolonganFilter
+      })
     : []
 
-
   const fetchGolongan = async () => {
-    try {
-      const res = await api.get('/golongan')
+  try {
+    const res = await api.get('/golongan/all')
 
-      const data: Golongan[] =
-        res.data.data?.data ??
-        res.data.data ??
-        []
+    console.log('=== RESPONSE GOLONGAN ===')
+    console.log(res.data)
 
-      setGolonganList(data)
-    } catch (err) {
-      console.error(err)
-      setError('Gagal memuat data golongan.')
-    }
+    const data: Golongan[] = res.data.data ?? []
+
+    console.log('=== DATA GOLONGAN ===')
+    console.table(data)
+
+    setGolonganList(data)
+  } catch (err) {
+    console.error(err)
+    setError('Gagal memuat data golongan.')
   }
+}
 
   const fetchPenyimpanan = async () => {
     try {
@@ -106,11 +123,13 @@ export default function AdminDashboard() {
         res.data.data ??
         []
 
-      console.log('Data penyimpanan:', data)
+      console.log('=== DATA PENYIMPANAN ===')
+      console.log(data)
 
       setPenyimpananList(data)
     } catch (err) {
       console.error(err)
+
       setError('Gagal memuat data penyimpanan.')
     }
   }
@@ -119,7 +138,6 @@ export default function AdminDashboard() {
     fetchGolongan()
     fetchPenyimpanan()
   }, [])
-
 
   useEffect(() => {
     let cancelled = false
@@ -135,7 +153,7 @@ export default function AdminDashboard() {
           page: number
           limit: number
           search?: string
-          tipeGolongan?: string
+          tipeGolongan?: TipeGolongan
           golonganId?: number
           penyimpananId?: number
         } = {
@@ -143,25 +161,29 @@ export default function AdminDashboard() {
           limit: pagination.limit,
         }
 
-        // SEARCH
+
         if (search.trim()) {
           params.search = search.trim()
         }
 
-        // TIPE GOLONGAN
+
         if (tipeGolonganFilter) {
           params.tipeGolongan = tipeGolonganFilter
         }
 
-        // GOLONGAN
         if (golonganFilter) {
           params.golonganId = Number(golonganFilter)
         }
 
-        // PENYIMPANAN
+    
+
         if (penyimpananFilter) {
-          params.penyimpananId = Number(penyimpananFilter)
+          params.penyimpananId =
+            Number(penyimpananFilter)
         }
+
+        console.log('=== PARAMS WAYANG ===')
+        console.log(params)
 
         const res = await api.get('/wayang', {
           params,
@@ -171,7 +193,8 @@ export default function AdminDashboard() {
           return
         }
 
-        const result: WayangResponse = res.data.data
+        const result: WayangResponse =
+          res.data.data
 
         setWayangList(result.data)
         setPagination(result.pagination)
@@ -216,19 +239,24 @@ export default function AdminDashboard() {
     }))
   }
 
-  const handleTipeGolonganFilter = (value: string) => {
+
+  const handleTipeGolonganFilter = (
+    value: TipeGolongan | '',
+  ) => {
     setTipeGolonganFilter(value)
 
     setGolonganFilter('')
+
 
     setPagination((prev) => ({
       ...prev,
       page: 1,
     }))
   }
-
-
-  const handleGolonganFilter = (value: string) => {
+ 
+  const handleGolonganFilter = (
+    value: string,
+  ) => {
     setGolonganFilter(value)
 
     setPagination((prev) => ({
@@ -237,7 +265,10 @@ export default function AdminDashboard() {
     }))
   }
 
-  const handlePenyimpananFilter = (value: string) => {
+
+  const handlePenyimpananFilter = (
+    value: string,
+  ) => {
     setPenyimpananFilter(value)
 
     setPagination((prev) => ({
@@ -267,6 +298,7 @@ export default function AdminDashboard() {
         setSuccessMsg('')
       }, 3000)
 
+  
       if (
         wayangList.length === 1 &&
         pagination.page > 1
@@ -275,46 +307,52 @@ export default function AdminDashboard() {
           ...prev,
           page: prev.page - 1,
         }))
-      } else {
-        const params: {
-          page: number
-          limit: number
-          search?: string
-          tipeGolongan?: string
-          golonganId?: number
-          penyimpananId?: number
-        } = {
-          page: pagination.page,
-          limit: pagination.limit,
-        }
 
-        if (search.trim()) {
-          params.search = search.trim()
-        }
-
-        if (tipeGolonganFilter) {
-          params.tipeGolongan = tipeGolonganFilter
-        }
-
-        if (golonganFilter) {
-          params.golonganId = Number(golonganFilter)
-        }
-
-        if (penyimpananFilter) {
-          params.penyimpananId = Number(
-            penyimpananFilter,
-          )
-        }
-
-        const res = await api.get('/wayang', {
-          params,
-        })
-
-        const result: WayangResponse = res.data.data
-
-        setWayangList(result.data)
-        setPagination(result.pagination)
+        return
       }
+
+    
+
+      const params: {
+        page: number
+        limit: number
+        search?: string
+        tipeGolongan?: TipeGolongan
+        golonganId?: number
+        penyimpananId?: number
+      } = {
+        page: pagination.page,
+        limit: pagination.limit,
+      }
+
+      if (search.trim()) {
+        params.search = search.trim()
+      }
+
+      if (tipeGolonganFilter) {
+        params.tipeGolongan =
+          tipeGolonganFilter
+      }
+
+      if (golonganFilter) {
+        params.golonganId =
+          Number(golonganFilter)
+      }
+
+      if (penyimpananFilter) {
+        params.penyimpananId =
+          Number(penyimpananFilter)
+      }
+
+      const res = await api.get('/wayang', {
+        params,
+      })
+
+      const result: WayangResponse =
+        res.data.data
+
+      setWayangList(result.data)
+      setPagination(result.pagination)
     } catch (err) {
       console.error(err)
 
@@ -327,7 +365,9 @@ export default function AdminDashboard() {
   }
 
 
-  const getThumb = (media: MediaWayang[]) => {
+  const getThumb = (
+    media: MediaWayang[],
+  ) => {
     const img = media?.find(
       (m) => m.jenis === 'IMAGE',
     )
@@ -338,7 +378,9 @@ export default function AdminDashboard() {
   }
 
 
-  const getTipeGolonganLabel = (tipe: string) => {
+  const getTipeGolonganLabel = (
+    tipe: TipeGolongan,
+  ) => {
     switch (tipe) {
       case 'SIMPINGAN_KIRI':
         return 'Simpingan Kiri'
@@ -381,8 +423,10 @@ export default function AdminDashboard() {
   }
 
 
+
   return (
     <div className="text-sm">
+
 
       {error && (
         <div className="flex items-center gap-2 px-4 py-3 mb-4 rounded-lg text-[0.8rem] bg-red-50 text-red-800 border border-red-200">
@@ -421,6 +465,8 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* SUCCESS */}
+
       {successMsg && (
         <div className="flex items-center gap-2 px-4 py-3 mb-4 rounded-lg text-[0.8rem] bg-green-50 text-green-800 border border-green-200">
           <svg
@@ -440,6 +486,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* HEADER */}
 
       <div className="mb-5">
         <h1 className="text-xl font-bold text-slate-900">
@@ -451,6 +498,7 @@ export default function AdminDashboard() {
         </p>
       </div>
 
+      {/* STATISTIC */}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <div className="bg-white rounded-lg shadow-sm border border-slate-100 px-4 py-3.5">
@@ -484,6 +532,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* FILTER */}
 
       <div className="flex flex-col xl:flex-row items-stretch gap-2.5 mb-4">
 
@@ -532,7 +581,9 @@ export default function AdminDashboard() {
           value={tipeGolonganFilter}
           onChange={(e) =>
             handleTipeGolonganFilter(
-              e.target.value,
+              e.target.value as
+                | TipeGolongan
+                | '',
             )
           }
           className="w-full xl:w-48 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-600 bg-white outline-none cursor-pointer focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
@@ -650,6 +701,7 @@ export default function AdminDashboard() {
         </Link>
       </div>
 
+      {/* TABLE */}
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-slate-100">
 
@@ -661,7 +713,6 @@ export default function AdminDashboard() {
           <>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
-
                 <thead>
                   <tr>
                     {[
@@ -715,9 +766,7 @@ export default function AdminDashboard() {
                             {thumb ? (
                               <img
                                 src={thumb}
-                                alt={
-                                  wayang.nama
-                                }
+                                alt={wayang.nama}
                                 className="w-11 h-11 object-cover rounded-md"
                               />
                             ) : (
@@ -834,21 +883,27 @@ export default function AdminDashboard() {
               </table>
             </div>
 
+            {/* PAGINATION */}
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3.5 py-3 border-t border-slate-100">
 
               <div className="text-xs text-slate-400">
                 Menampilkan{' '}
+
                 {(pagination.page - 1) *
                   pagination.limit +
                   1}{' '}
+
                 -{' '}
+
                 {Math.min(
                   pagination.page *
                     pagination.limit,
                   pagination.total,
                 )}{' '}
-                dari {pagination.total} data
+
+                dari {pagination.total}{' '}
+                data
               </div>
 
               <div className="flex items-center gap-1">
@@ -886,7 +941,8 @@ export default function AdminDashboard() {
                     length:
                       pagination.totalPages,
                   },
-                  (_, index) => index + 1,
+                  (_, index) =>
+                    index + 1,
                 )
                   .filter((page) => {
                     if (
@@ -970,7 +1026,9 @@ export default function AdminDashboard() {
                     pagination.page >=
                     pagination.totalPages
                   }
-                  onClick={handleNextPage}
+                  onClick={
+                    handleNextPage
+                  }
                   className="w-8 h-8 flex items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 text-xs disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
                 >
                   <svg
@@ -990,7 +1048,6 @@ export default function AdminDashboard() {
             </div>
           </>
         ) : (
-
           <div className="py-10 text-center">
             <div className="flex justify-center mb-2 text-slate-300">
               <svg
@@ -1004,6 +1061,7 @@ export default function AdminDashboard() {
                 strokeLinejoin="round"
               >
                 <path d="M12 2C8 5 5 8 5 13a7 7 0 0 0 14 0c0-5-3-8-7-11Z" />
+
                 <path d="M9 17c1.5 1 4.5 1 6 0" />
               </svg>
             </div>

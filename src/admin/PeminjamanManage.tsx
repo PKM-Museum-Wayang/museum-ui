@@ -71,59 +71,80 @@ export default function AdminPeminjaman() {
 
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [successMsg, setSuccessMsg] = useState('')
 
-  const fetchPeminjaman = async () => {
-    try {
-      setLoading(true)
-      setError('')
-
-      const params: {
-        page: number
-        limit: number
-        search?: string
-        status?: string
-      } = {
-        page: pagination.page,
-        limit: pagination.limit,
-      }
-
-      if (search.trim()) {
-        params.search = search.trim()
-      }
-
-      if (statusFilter) {
-        params.status = statusFilter
-      }
-
-      const res = await api.get('/peminjaman', {
-        params,
-      })
-
-      const result: PeminjamanResponse =
-        res.data.data
-
-      setPeminjamanList(result.data)
-      setPagination(result.pagination)
-      setStatistics(result.statistics)
-    } catch (err) {
-      console.error(err)
-
-      setError(
-        'Gagal memuat data peminjaman. Pastikan backend sudah berjalan.',
-      )
-    } finally {
-      setLoading(false)
-    }
-  }
+  /*
+   * ==========================================
+   * FETCH PEMINJAMAN
+   * ==========================================
+   */
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchPeminjaman()
+    let cancelled = false
+
+    const timer = setTimeout(async () => {
+      try {
+        if (!cancelled) {
+          setLoading(true)
+          setError('')
+        }
+
+        const params: {
+          page: number
+          limit: number
+          search?: string
+          status?: string
+        } = {
+          page: pagination.page,
+          limit: pagination.limit,
+        }
+
+        if (search.trim()) {
+          params.search = search.trim()
+        }
+
+        if (statusFilter) {
+          params.status = statusFilter
+        }
+
+        const res = await api.get('/peminjaman', {
+          params,
+        })
+
+        if (cancelled) {
+          return
+        }
+
+        const result: PeminjamanResponse =
+          res.data.data
+
+        setPeminjamanList(result.data)
+        setPagination(result.pagination)
+        setStatistics(result.statistics)
+      } catch (err) {
+        if (cancelled) {
+          return
+        }
+
+        console.error(err)
+
+        setError(
+          'Gagal memuat data peminjaman. Pastikan backend sudah berjalan.',
+        )
+
+        setPeminjamanList([])
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
     }, 300)
 
     return () => {
+      cancelled = true
       clearTimeout(timer)
     }
   }, [
@@ -132,6 +153,12 @@ export default function AdminPeminjaman() {
     search,
     statusFilter,
   ])
+
+  /*
+   * ==========================================
+   * SEARCH
+   * ==========================================
+   */
 
   const handleSearch = (value: string) => {
     setSearch(value)
@@ -142,6 +169,12 @@ export default function AdminPeminjaman() {
     }))
   }
 
+  /*
+   * ==========================================
+   * STATUS FILTER
+   * ==========================================
+   */
+
   const handleStatusFilter = (value: string) => {
     setStatusFilter(value)
 
@@ -150,6 +183,12 @@ export default function AdminPeminjaman() {
       page: 1,
     }))
   }
+
+  /*
+   * ==========================================
+   * STATUS
+   * ==========================================
+   */
 
   const getStatus = (
     peminjaman: Peminjaman,
@@ -171,6 +210,12 @@ export default function AdminPeminjaman() {
     return 'DIPINJAM'
   }
 
+  /*
+   * ==========================================
+   * FORMAT TANGGAL
+   * ==========================================
+   */
+
   const formatTanggal = (tanggal: string) => {
     return new Date(tanggal).toLocaleDateString(
       'id-ID',
@@ -181,6 +226,12 @@ export default function AdminPeminjaman() {
       },
     )
   }
+
+  /*
+   * ==========================================
+   * STATUS STYLE
+   * ==========================================
+   */
 
   const getStatusStyle = (
     status: StatusPeminjaman,
@@ -200,6 +251,12 @@ export default function AdminPeminjaman() {
     }
   }
 
+  /*
+   * ==========================================
+   * DELETE
+   * ==========================================
+   */
+
   const handleDelete = async (id: number) => {
     const confirmed = window.confirm(
       'Yakin ingin menghapus data peminjaman ini?',
@@ -214,6 +271,14 @@ export default function AdminPeminjaman() {
 
       await api.delete(`/peminjaman/${id}`)
 
+      setSuccessMsg(
+        'Data peminjaman berhasil dihapus.',
+      )
+
+      setTimeout(() => {
+        setSuccessMsg('')
+      }, 3000)
+
       if (
         peminjamanList.length === 1 &&
         pagination.page > 1
@@ -223,7 +288,37 @@ export default function AdminPeminjaman() {
           page: prev.page - 1,
         }))
       } else {
-        fetchPeminjaman()
+        /*
+         * Fetch ulang
+         */
+        const params: {
+          page: number
+          limit: number
+          search?: string
+          status?: string
+        } = {
+          page: pagination.page,
+          limit: pagination.limit,
+        }
+
+        if (search.trim()) {
+          params.search = search.trim()
+        }
+
+        if (statusFilter) {
+          params.status = statusFilter
+        }
+
+        const res = await api.get('/peminjaman', {
+          params,
+        })
+
+        const result: PeminjamanResponse =
+          res.data.data
+
+        setPeminjamanList(result.data)
+        setPagination(result.pagination)
+        setStatistics(result.statistics)
       }
     } catch (err) {
       console.error(err)
@@ -237,6 +332,12 @@ export default function AdminPeminjaman() {
       }, 3000)
     }
   }
+
+  /*
+   * ==========================================
+   * PAGINATION
+   * ==========================================
+   */
 
   const handlePreviousPage = () => {
     if (pagination.page <= 1) {
@@ -263,13 +364,25 @@ export default function AdminPeminjaman() {
     }))
   }
 
+  /*
+   * ==========================================
+   * RENDER
+   * ==========================================
+   */
+
   return (
-    <>
+    <div className="text-sm">
+
+      {/* ==========================================
+          ERROR
+          ========================================== */}
+
       {error && (
-        <div className="flex items-center gap-2 px-5 py-4 mb-6 rounded-lg text-[0.9rem] bg-red-50 text-red-800 border border-red-200">
+        <div className="flex items-center gap-2 px-4 py-3 mb-4 rounded-lg text-[0.8rem] bg-red-50 text-red-800 border border-red-200">
+
           <svg
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -282,12 +395,14 @@ export default function AdminPeminjaman() {
               cy="12"
               r="10"
             />
+
             <line
               x1="12"
               y1="8"
               x2="12"
               y2="12"
             />
+
             <line
               x1="12"
               y1="16"
@@ -300,29 +415,75 @@ export default function AdminPeminjaman() {
         </div>
       )}
 
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">
+      {/* ==========================================
+          SUCCESS
+          ========================================== */}
+
+      {successMsg && (
+        <div className="flex items-center gap-2 px-4 py-3 mb-4 rounded-lg text-[0.8rem] bg-green-50 text-green-800 border border-green-200">
+
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+
+          <span>{successMsg}</span>
+        </div>
+      )}
+
+      {/* ==========================================
+          HEADER
+          ========================================== */}
+
+      <div className="mb-5">
+
+        <h1 className="text-xl font-bold text-slate-900">
           Kelola Peminjaman
         </h1>
+
+        <p className="text-xs text-slate-400 mt-1">
+          Kelola data peminjaman koleksi wayang
+        </p>
+
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+      {/* ==========================================
+          STATISTICS
+          ========================================== */}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+
+        {/* TOTAL PEMINJAMAN */}
+
+        <div className="bg-white rounded-lg shadow-sm border border-slate-100 px-4 py-3.5">
+
           <div className="flex items-center justify-between">
+
             <div>
-              <p className="text-sm text-slate-400">
+
+              <p className="text-xs text-slate-400">
                 Total Peminjaman
               </p>
 
-              <h2 className="text-2xl font-bold text-slate-900 mt-1">
+              <h2 className="text-xl font-bold text-slate-900 mt-0.5">
                 {statistics.totalPeminjaman}
               </h2>
+
             </div>
 
-            <div className="w-11 h-11 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+            <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+
               <svg
-                width="22"
-                height="22"
+                width="19"
+                height="19"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -331,41 +492,55 @@ export default function AdminPeminjaman() {
                 strokeLinejoin="round"
               >
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+
                 <polyline points="14 2 14 8 20 8" />
+
                 <line
                   x1="16"
                   y1="13"
                   x2="8"
                   y2="13"
                 />
+
                 <line
                   x1="16"
                   y1="17"
                   x2="8"
                   y2="17"
                 />
+
                 <polyline points="10 9 9 9 8 9" />
               </svg>
+
             </div>
+
           </div>
+
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+        {/* TOTAL PEMINJAM */}
+
+        <div className="bg-white rounded-lg shadow-sm border border-slate-100 px-4 py-3.5">
+
           <div className="flex items-center justify-between">
+
             <div>
-              <p className="text-sm text-slate-400">
+
+              <p className="text-xs text-slate-400">
                 Total Peminjam
               </p>
 
-              <h2 className="text-2xl font-bold text-slate-900 mt-1">
+              <h2 className="text-xl font-bold text-slate-900 mt-0.5">
                 {statistics.totalPeminjam}
               </h2>
+
             </div>
 
-            <div className="w-11 h-11 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
+            <div className="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
+
               <svg
-                width="22"
-                height="22"
+                width="19"
+                height="19"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -374,32 +549,43 @@ export default function AdminPeminjaman() {
                 strokeLinejoin="round"
               >
                 <path d="M20 21a8 8 0 0 0-16 0" />
+
                 <circle
                   cx="12"
                   cy="7"
                   r="4"
                 />
               </svg>
+
             </div>
+
           </div>
+
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+        {/* SEDANG DIPINJAM */}
+
+        <div className="bg-white rounded-lg shadow-sm border border-slate-100 px-4 py-3.5">
+
           <div className="flex items-center justify-between">
+
             <div>
-              <p className="text-sm text-slate-400">
+
+              <p className="text-xs text-slate-400">
                 Sedang Dipinjam
               </p>
 
-              <h2 className="text-2xl font-bold text-slate-900 mt-1">
+              <h2 className="text-xl font-bold text-slate-900 mt-0.5">
                 {statistics.totalDipinjam}
               </h2>
+
             </div>
 
-            <div className="w-11 h-11 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">
+            <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">
+
               <svg
-                width="22"
-                height="22"
+                width="19"
+                height="19"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -408,7 +594,9 @@ export default function AdminPeminjaman() {
                 strokeLinejoin="round"
               >
                 <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+
                 <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+
                 <line
                   x1="12"
                   y1="22.08"
@@ -416,26 +604,36 @@ export default function AdminPeminjaman() {
                   y2="12"
                 />
               </svg>
+
             </div>
+
           </div>
+
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+        {/* DIKEMBALIKAN */}
+
+        <div className="bg-white rounded-lg shadow-sm border border-slate-100 px-4 py-3.5">
+
           <div className="flex items-center justify-between">
+
             <div>
-              <p className="text-sm text-slate-400">
+
+              <p className="text-xs text-slate-400">
                 Dikembalikan
               </p>
 
-              <h2 className="text-2xl font-bold text-slate-900 mt-1">
+              <h2 className="text-xl font-bold text-slate-900 mt-0.5">
                 {statistics.totalDikembalikan}
               </h2>
+
             </div>
 
-            <div className="w-11 h-11 rounded-lg bg-green-100 flex items-center justify-center text-green-600">
+            <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center text-green-600">
+
               <svg
-                width="22"
-                height="22"
+                width="19"
+                height="19"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -445,17 +643,29 @@ export default function AdminPeminjaman() {
               >
                 <polyline points="20 6 9 17 4 12" />
               </svg>
+
             </div>
+
           </div>
+
         </div>
+
       </div>
 
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 mb-6">
-        <div className="relative flex-1">
+      {/* ==========================================
+          SEARCH + FILTER + TAMBAH
+          ========================================== */}
+
+      <div className="flex flex-col xl:flex-row items-stretch gap-2.5 mb-4">
+
+        {/* SEARCH */}
+
+        <div className="relative flex-1 min-w-0">
+
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -468,6 +678,7 @@ export default function AdminPeminjaman() {
               cy="11"
               r="8"
             />
+
             <line
               x1="21"
               y1="21"
@@ -483,17 +694,21 @@ export default function AdminPeminjaman() {
             onChange={(e) =>
               handleSearch(e.target.value)
             }
-            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm outline-none bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-xs outline-none bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
           />
+
         </div>
+
+        {/* STATUS */}
 
         <select
           value={statusFilter}
           onChange={(e) =>
             handleStatusFilter(e.target.value)
           }
-          className="px-4 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-600 bg-white outline-none cursor-pointer focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+          className="w-full xl:w-48 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-600 bg-white outline-none cursor-pointer focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
         >
+
           <option value="">
             Semua Status
           </option>
@@ -509,15 +724,19 @@ export default function AdminPeminjaman() {
           <option value="DIKEMBALIKAN">
             Dikembalikan
           </option>
+
         </select>
+
+        {/* TAMBAH */}
 
         <Link
           to="/admin/peminjaman/create"
-          className="inline-flex items-center justify-center gap-2 px-5 py-[0.65rem] bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg no-underline transition-colors whitespace-nowrap"
+          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-lg no-underline transition-colors whitespace-nowrap"
         >
+
           <svg
-            width="16"
-            height="16"
+            width="14"
+            height="14"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -531,6 +750,7 @@ export default function AdminPeminjaman() {
               x2="12"
               y2="19"
             />
+
             <line
               x1="5"
               y1="12"
@@ -539,21 +759,36 @@ export default function AdminPeminjaman() {
             />
           </svg>
 
-          Tambah Peminjam
+          Tambah Peminjaman
+
         </Link>
+
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      {/* ==========================================
+          TABLE
+          ========================================== */}
+
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-slate-100">
+
         {loading ? (
-          <div className="py-16 text-center text-slate-400">
+
+          <div className="py-12 text-center text-slate-400 text-xs">
             Memuat data…
           </div>
+
         ) : peminjamanList.length > 0 ? (
+
           <>
+
             <div className="overflow-x-auto">
+
               <table className="w-full border-collapse">
+
                 <thead>
+
                   <tr>
+
                     {[
                       'No',
                       'Nama Peminjam',
@@ -563,47 +798,52 @@ export default function AdminPeminjaman() {
                       'Status',
                       'Aksi',
                     ].map((heading) => (
+
                       <th
                         key={heading}
-                        className="bg-slate-50 px-5 py-[0.85rem] text-left text-[0.8rem] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200 whitespace-nowrap"
+                        className="bg-slate-50 px-3.5 py-2.5 text-left text-[0.68rem] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200 whitespace-nowrap"
                       >
                         {heading}
                       </th>
+
                     ))}
+
                   </tr>
+
                 </thead>
 
                 <tbody>
+
                   {peminjamanList.map(
-                    (
-                      peminjaman,
-                      idx,
-                    ) => {
+                    (peminjaman, idx) => {
+
                       const status =
-                        getStatus(
-                          peminjaman,
-                        )
+                        getStatus(peminjaman)
 
                       const nomor =
-                        (pagination.page -
-                          1) *
+                        (pagination.page - 1) *
                           pagination.limit +
                         idx +
                         1
 
                       return (
+
                         <tr
-                          key={
-                            peminjaman.id
-                          }
+                          key={peminjaman.id}
                           className="hover:bg-slate-50 transition-colors"
                         >
-                          <td className="px-5 py-4 text-[0.9rem] text-slate-500 border-b border-slate-100">
+
+                          {/* NO */}
+
+                          <td className="px-3.5 py-2.5 text-xs text-slate-500 border-b border-slate-100">
                             {nomor}
                           </td>
 
-                          <td className="px-5 py-4 border-b border-slate-100">
-                            <div className="text-[0.9rem] text-slate-800 font-medium">
+                          {/* NAMA PEMINJAM */}
+
+                          <td className="px-3.5 py-2.5 border-b border-slate-100">
+
+                            <div className="text-xs text-slate-800 font-medium">
                               {
                                 peminjaman
                                   .peminjam
@@ -611,16 +851,19 @@ export default function AdminPeminjaman() {
                               }
                             </div>
 
-                            <div className="text-xs text-slate-400 mt-1">
+                            <div className="text-[0.65rem] text-slate-400 mt-0.5">
                               {
                                 peminjaman
                                   .peminjam
                                   .noHp
                               }
                             </div>
+
                           </td>
 
-                          <td className="px-5 py-4 text-[0.9rem] text-slate-600 border-b border-slate-100">
+                          {/* WAYANG */}
+
+                          <td className="px-3.5 py-2.5 text-xs text-slate-600 border-b border-slate-100">
                             {
                               peminjaman
                                 .wayang
@@ -628,121 +871,173 @@ export default function AdminPeminjaman() {
                             }
                           </td>
 
-                          <td className="px-5 py-4 text-[0.9rem] text-slate-500 border-b border-slate-100 whitespace-nowrap">
+                          {/* TANGGAL PINJAM */}
+
+                          <td className="px-3.5 py-2.5 text-xs text-slate-500 border-b border-slate-100 whitespace-nowrap">
                             {formatTanggal(
                               peminjaman
                                 .tanggalPinjam,
                             )}
                           </td>
 
-                          <td className="px-5 py-4 text-[0.9rem] text-slate-500 border-b border-slate-100 whitespace-nowrap">
+                          {/* TANGGAL KEMBALI */}
+
+                          <td className="px-3.5 py-2.5 text-xs text-slate-500 border-b border-slate-100 whitespace-nowrap">
                             {formatTanggal(
                               peminjaman
                                 .tanggalKembali,
                             )}
                           </td>
 
-                          <td className="px-5 py-4 border-b border-slate-100">
+                          {/* STATUS */}
+
+                          <td className="px-3.5 py-2.5 border-b border-slate-100">
+
                             <span
-                              className={`text-xs font-medium px-2 py-1 rounded ${getStatusStyle(
+                              className={`text-[0.65rem] font-medium px-1.5 py-0.5 rounded ${getStatusStyle(
                                 status,
                               )}`}
                             >
                               {status}
                             </span>
+
                           </td>
 
-                          <td className="px-5 py-4 border-b border-slate-100">
-                            <div className="flex gap-2">
+                          {/* AKSI */}
+
+                          <td className="px-3.5 py-2.5 border-b border-slate-100">
+
+                            <div className="flex gap-1.5">
+
+                              {/* EDIT */}
+
                               <Link
                                 to={`/admin/peminjaman/${peminjaman.id}/edit`}
-                                className="inline-flex items-center px-3 py-[0.4rem] bg-amber-500 hover:bg-amber-600 text-white text-[0.8rem] font-medium rounded-lg no-underline transition-colors"
+                                className="inline-flex items-center px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[0.7rem] font-medium rounded-md no-underline transition-colors"
                               >
+
                                 <svg
-                                  width="14"
-                                  height="14"
+                                  width="12"
+                                  height="12"
                                   viewBox="0 0 24 24"
                                   fill="none"
                                   stroke="currentColor"
                                   strokeWidth="2"
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
-                                  className="mr-1.5"
+                                  className="mr-1"
                                 >
                                   <path d="M12 20h9" />
+
                                   <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
                                 </svg>
 
                                 Edit
+
                               </Link>
 
+                              {/* DELETE */}
+
                               <button
+                                type="button"
                                 onClick={() =>
                                   handleDelete(
                                     peminjaman.id,
                                   )
                                 }
-                                className="inline-flex items-center px-3 py-[0.4rem] bg-red-500 hover:bg-red-600 text-white text-[0.8rem] font-medium rounded-lg cursor-pointer border-none transition-colors"
+                                className="inline-flex items-center px-2.5 py-1.5 bg-red-500 hover:bg-red-600 text-white text-[0.7rem] font-medium rounded-md cursor-pointer border-none transition-colors"
                               >
+
                                 <svg
-                                  width="14"
-                                  height="14"
+                                  width="12"
+                                  height="12"
                                   viewBox="0 0 24 24"
                                   fill="none"
                                   stroke="currentColor"
                                   strokeWidth="2"
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
-                                  className="mr-1.5"
+                                  className="mr-1"
                                 >
                                   <polyline points="3 6 5 6 21 6" />
+
                                   <path d="M19 6l-1 14H6L5 6" />
+
                                   <path d="M10 11v6" />
+
                                   <path d="M14 11v6" />
+
                                   <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
                                 </svg>
 
                                 Hapus
+
                               </button>
+
                             </div>
+
                           </td>
+
                         </tr>
+
                       )
                     },
                   )}
+
                 </tbody>
+
               </table>
+
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-4 border-t border-slate-100">
-              <div className="text-sm text-slate-400">
+            {/* ==========================================
+                PAGINATION
+                ========================================== */}
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3.5 py-3 border-t border-slate-100">
+
+              <div className="text-xs text-slate-400">
+
                 Menampilkan{' '}
-                {(pagination.page - 1) *
-                  pagination.limit +
-                  1}
+
+                {pagination.total > 0
+                  ? (pagination.page - 1) *
+                      pagination.limit +
+                    1
+                  : 0}
+
                 {' - '}
+
                 {Math.min(
                   pagination.page *
                     pagination.limit,
                   pagination.total,
                 )}
+
                 {' '}dari{' '}
+
                 {pagination.total} data
+
               </div>
 
               <div className="flex items-center gap-1">
+
+                {/* PREVIOUS */}
+
                 <button
+                  type="button"
                   disabled={
                     pagination.page === 1
                   }
                   onClick={
                     handlePreviousPage
                   }
-                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                  className="w-8 h-8 flex items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 text-xs disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
                 >
+
                   <svg
-                    width="16"
-                    height="16"
+                    width="14"
+                    height="14"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -752,16 +1047,21 @@ export default function AdminPeminjaman() {
                   >
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
+
                 </button>
+
+                {/* PAGE NUMBER */}
 
                 {Array.from(
                   {
                     length:
                       pagination.totalPages,
                   },
-                  (_, index) => index + 1,
+                  (_, index) =>
+                    index + 1,
                 )
                   .filter((page) => {
+
                     if (
                       pagination.totalPages <=
                       7
@@ -769,29 +1069,20 @@ export default function AdminPeminjaman() {
                       return true
                     }
 
-                    if (page === 1) {
-                      return true
-                    }
-
                     if (
+                      page === 1 ||
                       page ===
-                      pagination.totalPages
+                        pagination.totalPages
                     ) {
                       return true
                     }
 
-                    if (
+                    return (
                       page >=
-                        pagination.page -
-                          1 &&
+                        pagination.page - 1 &&
                       page <=
-                        pagination.page +
-                          1
-                    ) {
-                      return true
-                    }
-
-                    return false
+                        pagination.page + 1
+                    )
                   })
                   .map(
                     (
@@ -799,6 +1090,7 @@ export default function AdminPeminjaman() {
                       index,
                       pages,
                     ) => {
+
                       const previousPage =
                         pages[index - 1]
 
@@ -810,28 +1102,29 @@ export default function AdminPeminjaman() {
                           1
 
                       return (
+
                         <div
                           key={page}
                           className="flex items-center gap-1"
                         >
+
                           {showEllipsis && (
-                            <span className="w-9 h-9 flex items-center justify-center text-sm text-slate-400">
+                            <span className="w-8 h-8 flex items-center justify-center text-xs text-slate-400">
                               ...
                             </span>
                           )}
 
                           <button
+                            type="button"
                             onClick={() =>
                               setPagination(
-                                (
-                                  prev,
-                                ) => ({
+                                (prev) => ({
                                   ...prev,
                                   page,
                                 }),
                               )
                             }
-                            className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm transition-colors ${
+                            className={`w-8 h-8 flex items-center justify-center rounded-md text-xs transition-colors ${
                               pagination.page ===
                               page
                                 ? 'bg-blue-500 text-white'
@@ -840,22 +1133,30 @@ export default function AdminPeminjaman() {
                           >
                             {page}
                           </button>
+
                         </div>
+
                       )
                     },
                   )}
 
+                {/* NEXT */}
+
                 <button
+                  type="button"
                   disabled={
-                    pagination.page ===
+                    pagination.page >=
                     pagination.totalPages
                   }
-                  onClick={handleNextPage}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                  onClick={
+                    handleNextPage
+                  }
+                  className="w-8 h-8 flex items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 text-xs disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
                 >
+
                   <svg
-                    width="16"
-                    height="16"
+                    width="14"
+                    height="14"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -865,16 +1166,28 @@ export default function AdminPeminjaman() {
                   >
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
+
                 </button>
+
               </div>
+
             </div>
+
           </>
+
         ) : (
-          <div className="py-12 text-center">
-            <div className="flex justify-center mb-3 text-slate-300">
+
+          /* ==========================================
+             EMPTY STATE
+             ========================================== */
+
+          <div className="py-10 text-center">
+
+            <div className="flex justify-center mb-2 text-slate-300">
+
               <svg
-                width="40"
-                height="40"
+                width="34"
+                height="34"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -883,13 +1196,16 @@ export default function AdminPeminjaman() {
                 strokeLinejoin="round"
               >
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+
                 <polyline points="14 2 14 8 20 8" />
+
                 <line
                   x1="16"
                   y1="13"
                   x2="8"
                   y2="13"
                 />
+
                 <line
                   x1="16"
                   y1="17"
@@ -897,26 +1213,35 @@ export default function AdminPeminjaman() {
                   y2="17"
                 />
               </svg>
+
             </div>
 
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-400 text-xs">
+
               {search || statusFilter
                 ? 'Data peminjaman tidak ditemukan.'
                 : 'Belum ada data peminjaman.'}
+
             </p>
 
             {!search &&
               !statusFilter && (
+
                 <Link
                   to="/admin/peminjaman/create"
-                  className="inline-block mt-4 text-sm text-blue-500 hover:text-blue-600 no-underline"
+                  className="inline-block mt-3 text-xs text-blue-500 hover:text-blue-600 no-underline"
                 >
                   Tambah peminjaman
                 </Link>
+
               )}
+
           </div>
+
         )}
+
       </div>
-    </>
+
+    </div>
   )
 }
