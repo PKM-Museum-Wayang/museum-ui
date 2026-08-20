@@ -70,7 +70,7 @@ interface WayangDetail {
   kondisi?: string
   gaya?: string
   golonganId: number
-  golongan: {
+  golongan?: {
     id: number
     namaGolongan: string
     tipeGolongan: string
@@ -151,9 +151,6 @@ export default function WayangEdit() {
 
   const [error, setError] = useState('')
 
-  // =========================================================
-  // FETCH DATA
-  // =========================================================
 
   useEffect(() => {
     const fetchData = async () => {
@@ -166,19 +163,17 @@ export default function WayangEdit() {
           penyimpananResponse,
           wayangResponse,
         ] = await Promise.all([
-          api.get('/golongan'),
+        
+          api.get('/golongan/all'),
+
           api.get('/penyimpanan'),
+
           api.get(`/wayang/${id}`),
         ])
 
+  
         const golonganData =
           golonganResponse.data?.data
-
-        const penyimpananData =
-          penyimpananResponse.data?.data
-
-        const wayangData: WayangDetail =
-          wayangResponse.data?.data
 
         if (Array.isArray(golonganData)) {
           setGolonganList(golonganData)
@@ -186,11 +181,21 @@ export default function WayangEdit() {
           setGolonganList([])
         }
 
+   
+
+        const penyimpananData =
+          penyimpananResponse.data?.data
+
         if (Array.isArray(penyimpananData)) {
           setPenyimpananList(penyimpananData)
         } else {
           setPenyimpananList([])
         }
+
+ 
+
+        const wayangData: WayangDetail =
+          wayangResponse.data?.data
 
         if (!wayangData) {
           throw new Error(
@@ -198,7 +203,13 @@ export default function WayangEdit() {
           )
         }
 
-        setNoWayang(wayangData.noWayang)
+        setNoWayang(
+          wayangData.noWayang ?? '',
+        )
+
+     
+        const tipeGolongan =
+          wayangData.golongan?.tipeGolongan ?? ''
 
         setFormData({
           nama: wayangData.nama ?? '',
@@ -207,12 +218,14 @@ export default function WayangEdit() {
           cerita: wayangData.cerita ?? '',
           kondisi: wayangData.kondisi ?? '',
           gaya: wayangData.gaya ?? '',
-          tipeGolongan:
-            wayangData.golongan?.tipeGolongan ?? '',
+
+          tipeGolongan,
+
           golonganId:
             wayangData.golonganId != null
               ? String(wayangData.golonganId)
               : '',
+
           penyimpananId:
             wayangData.penyimpananId != null
               ? String(wayangData.penyimpananId)
@@ -246,9 +259,7 @@ export default function WayangEdit() {
     }
   }, [id])
 
-  // =========================================================
-  // HANDLE FORM
-  // =========================================================
+
 
   const handleChange = (
     e: ChangeEvent<
@@ -269,9 +280,7 @@ export default function WayangEdit() {
     }
   }
 
-  // =========================================================
-  // HANDLE TIPE GOLONGAN
-  // =========================================================
+
 
   const handleTipeGolonganChange = (
     e: ChangeEvent<HTMLSelectElement>,
@@ -280,6 +289,8 @@ export default function WayangEdit() {
 
     setFormData((prev) => ({
       ...prev,
+
+  
       tipeGolongan: value,
       golonganId: '',
     }))
@@ -289,20 +300,14 @@ export default function WayangEdit() {
     }
   }
 
-  // =========================================================
-  // FILTER GOLONGAN
-  // =========================================================
 
-  const filteredGolongan =
-    golonganList.filter(
-      (golongan) =>
-        golongan.tipeGolongan ===
-        formData.tipeGolongan,
-    )
+  const filteredGolongan = golonganList.filter(
+    (golongan) =>
+      golongan.tipeGolongan ===
+      formData.tipeGolongan,
+  )
 
-  // =========================================================
-  // VALIDATION
-  // =========================================================
+
 
   const validateForm = (): boolean => {
     if (!formData.nama.trim()) {
@@ -344,10 +349,7 @@ export default function WayangEdit() {
     return true
   }
 
-  // =========================================================
-  // DELETE MEDIA
-  // =========================================================
-
+ 
   const handleDeleteMedia = async (
     mediaId: number,
   ) => {
@@ -378,9 +380,7 @@ export default function WayangEdit() {
     }
   }
 
-  // =========================================================
-  // SUBMIT
-  // =========================================================
+
 
   const handleSubmit = async (
     e: FormEvent<HTMLFormElement>,
@@ -394,14 +394,17 @@ export default function WayangEdit() {
     }
 
     if (!id) {
-      setError('ID wayang tidak ditemukan.')
+      setError(
+        'ID wayang tidak ditemukan.',
+      )
       return
     }
 
     try {
       setLoadingSubmit(true)
 
-      // 1. Update data wayang
+
+
       const payload = {
         nama: formData.nama.trim(),
 
@@ -417,7 +420,8 @@ export default function WayangEdit() {
           ? formData.cerita.trim()
           : undefined,
 
-        kondisi: formData.kondisi || undefined,
+        kondisi:
+          formData.kondisi || undefined,
 
         golonganId: Number(
           formData.golonganId,
@@ -438,7 +442,7 @@ export default function WayangEdit() {
         payload,
       )
 
-      // 2. Upload gambar baru jika ada
+ 
       const selectedFile =
         fileRef.current?.files?.[0]
 
@@ -472,7 +476,8 @@ export default function WayangEdit() {
         )
       }
 
-      // 3. Kembali ke dashboard
+
+
       navigate('/admin/dashboard')
     } catch (err: unknown) {
       console.error(
@@ -491,9 +496,6 @@ export default function WayangEdit() {
     }
   }
 
-  // =========================================================
-  // LOADING
-  // =========================================================
 
   if (loadingData) {
     return (
@@ -515,6 +517,7 @@ export default function WayangEdit() {
                 r="9"
                 strokeOpacity="0.25"
               />
+
               <path d="M21 12a9 9 0 0 1-9 9" />
             </svg>
 
@@ -527,17 +530,14 @@ export default function WayangEdit() {
     )
   }
 
-  const imageMedia =
-    existingMedia.filter(
-      (media) => media.jenis === 'IMAGE',
-    )
+  const imageMedia = existingMedia.filter(
+    (media) => media.jenis === 'IMAGE',
+  )
 
   return (
     <div className="w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
 
-      {/* =====================================================
-          HEADER
-      ====================================================== */}
+
 
       <div className="w-full mb-7 lg:mb-8">
         <Link
@@ -560,6 +560,7 @@ export default function WayangEdit() {
               x2="5"
               y2="12"
             />
+
             <polyline points="12 19 5 12 12 5" />
           </svg>
 
@@ -567,7 +568,6 @@ export default function WayangEdit() {
         </Link>
 
         <div className="flex items-center gap-3 sm:gap-4">
-
           <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
             <svg
               width="24"
@@ -595,17 +595,13 @@ export default function WayangEdit() {
               Perbarui informasi wayang yang sudah tersimpan.
             </p>
           </div>
-
         </div>
       </div>
 
-      {/* =====================================================
-          ERROR
-      ====================================================== */}
+
 
       {error && (
         <div className="w-full mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 sm:px-5 py-4">
-
           <div className="flex-shrink-0 w-7 h-7 rounded-full bg-red-100 flex items-center justify-center">
             <svg
               width="15"
@@ -622,6 +618,7 @@ export default function WayangEdit() {
                 x2="6"
                 y2="18"
               />
+
               <line
                 x1="6"
                 y1="6"
@@ -640,27 +637,18 @@ export default function WayangEdit() {
               {error}
             </p>
           </div>
-
         </div>
       )}
 
-      {/* =====================================================
-          FORM CARD
-      ====================================================== */}
 
       <form
         onSubmit={handleSubmit}
         className="w-full bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgba(15,23,42,0.06)] overflow-hidden"
       >
 
-        {/* ===================================================
-            SECTION 1 — INFORMASI DASAR
-        ==================================================== */}
 
         <div className="px-5 sm:px-8 py-5 sm:py-6 border-b border-slate-100">
-
           <div className="flex items-center gap-3 sm:gap-4">
-
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
               <svg
                 width="20"
@@ -674,6 +662,7 @@ export default function WayangEdit() {
                 className="text-blue-600"
               >
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+
                 <circle
                   cx="12"
                   cy="7"
@@ -691,12 +680,10 @@ export default function WayangEdit() {
                 Perbarui informasi dasar mengenai wayang.
               </p>
             </div>
-
           </div>
         </div>
 
         <div className="px-5 sm:px-8 py-6 sm:py-8">
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
 
             {/* NO WAYANG */}
@@ -820,18 +807,13 @@ export default function WayangEdit() {
                 )}
               </select>
             </div>
-
           </div>
         </div>
 
-        {/* ===================================================
-            SECTION 2 — KLASIFIKASI
-        ==================================================== */}
+
 
         <div className="px-5 sm:px-8 py-5 sm:py-6 border-t border-b border-slate-100">
-
           <div className="flex items-center gap-3 sm:gap-4">
-
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
               <svg
                 width="20"
@@ -860,15 +842,13 @@ export default function WayangEdit() {
                 Tentukan golongan dan lokasi penyimpanan wayang.
               </p>
             </div>
-
           </div>
         </div>
 
         <div className="px-5 sm:px-8 py-6 sm:py-8">
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
 
-            {/* TIPE GOLONGAN */}
+  
 
             <div>
               <label
@@ -907,8 +887,7 @@ export default function WayangEdit() {
               </select>
             </div>
 
-            {/* NAMA GOLONGAN */}
-
+    
             <div>
               <label
                 htmlFor="golonganId"
@@ -926,31 +905,34 @@ export default function WayangEdit() {
                 value={formData.golonganId}
                 onChange={handleChange}
                 disabled={
-                  !formData.tipeGolongan ||
-                  loadingData
+                  !formData.tipeGolongan
                 }
                 className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-800 outline-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
               >
                 <option value="">
-                  {formData.tipeGolongan
-                    ? 'Pilih nama golongan'
-                    : 'Pilih tipe golongan dulu'}
+                  {!formData.tipeGolongan
+                    ? 'Pilih tipe golongan dulu'
+                    : filteredGolongan.length === 0
+                      ? 'Tidak ada golongan tersedia'
+                      : 'Pilih nama golongan'}
                 </option>
 
                 {filteredGolongan.map(
                   (golongan) => (
                     <option
                       key={golongan.id}
-                      value={golongan.id}
+                      value={String(golongan.id)}
                     >
                       {golongan.namaGolongan}
                     </option>
                   ),
                 )}
               </select>
+
+      
             </div>
 
-            {/* PENYIMPANAN */}
+          
 
             <div>
               <label
@@ -968,8 +950,7 @@ export default function WayangEdit() {
                 name="penyimpananId"
                 value={formData.penyimpananId}
                 onChange={handleChange}
-                disabled={loadingData}
-                className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-800 outline-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-800 outline-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
               >
                 <option value="">
                   {penyimpananList.length === 0
@@ -981,7 +962,9 @@ export default function WayangEdit() {
                   (penyimpanan) => (
                     <option
                       key={penyimpanan.id}
-                      value={penyimpanan.id}
+                      value={String(
+                        penyimpanan.id,
+                      )}
                     >
                       {penyimpanan.namaKotak}
                     </option>
@@ -989,8 +972,7 @@ export default function WayangEdit() {
                 )}
               </select>
 
-              {penyimpananList.length >
-                0 && (
+              {penyimpananList.length > 0 && (
                 <p className="text-[11px] sm:text-xs text-slate-400 mt-2">
                   {penyimpananList.length}{' '}
                   kotak penyimpanan tersedia.
@@ -998,7 +980,7 @@ export default function WayangEdit() {
               )}
             </div>
 
-            {/* KONDISI */}
+    
 
             <div>
               <label
@@ -1006,6 +988,7 @@ export default function WayangEdit() {
                 className="block text-xs sm:text-sm font-bold text-slate-700 mb-2"
               >
                 Kondisi
+
                 <span className="ml-2 text-[10px] sm:text-xs font-normal text-slate-400">
                   Opsional
                 </span>
@@ -1034,18 +1017,12 @@ export default function WayangEdit() {
                 )}
               </select>
             </div>
-
           </div>
         </div>
 
-        {/* ===================================================
-            SECTION 3 — DESKRIPSI & CERITA
-        ==================================================== */}
 
         <div className="px-5 sm:px-8 py-5 sm:py-6 border-t border-b border-slate-100">
-
           <div className="flex items-center gap-3 sm:gap-4">
-
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
               <svg
                 width="20"
@@ -1074,12 +1051,10 @@ export default function WayangEdit() {
                 Perbarui deskripsi dan cerita mengenai wayang.
               </p>
             </div>
-
           </div>
         </div>
 
         <div className="px-5 sm:px-8 py-6 sm:py-8">
-
           <div className="grid grid-cols-1 gap-5 sm:gap-6">
 
             {/* DESKRIPSI */}
@@ -1090,6 +1065,7 @@ export default function WayangEdit() {
                 className="block text-xs sm:text-sm font-bold text-slate-700 mb-2"
               >
                 Deskripsi
+
                 <span className="ml-2 text-[10px] sm:text-xs font-normal text-slate-400">
                   Opsional
                 </span>
@@ -1114,6 +1090,7 @@ export default function WayangEdit() {
                 className="block text-xs sm:text-sm font-bold text-slate-700 mb-2"
               >
                 Cerita
+
                 <span className="ml-2 text-[10px] sm:text-xs font-normal text-slate-400">
                   Opsional
                 </span>
@@ -1129,18 +1106,13 @@ export default function WayangEdit() {
                 className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 outline-none resize-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
               />
             </div>
-
           </div>
         </div>
 
-        {/* ===================================================
-            SECTION 4 — GAMBAR
-        ==================================================== */}
+
 
         <div className="px-5 sm:px-8 py-5 sm:py-6 border-t border-b border-slate-100">
-
           <div className="flex items-center gap-3 sm:gap-4">
-
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
               <svg
                 width="20"
@@ -1160,11 +1132,13 @@ export default function WayangEdit() {
                   height="18"
                   rx="2"
                 />
+
                 <circle
                   cx="8.5"
                   cy="8.5"
                   r="1.5"
                 />
+
                 <path d="m21 15-5-5L5 21" />
               </svg>
             </div>
@@ -1178,7 +1152,6 @@ export default function WayangEdit() {
                 Kelola gambar dokumentasi wayang.
               </p>
             </div>
-
           </div>
         </div>
 
@@ -1187,21 +1160,18 @@ export default function WayangEdit() {
           {/* EXISTING IMAGE */}
 
           <div className="mb-5">
-
             <p className="text-xs sm:text-sm font-bold text-slate-700 mb-3">
               Gambar Saat Ini
             </p>
 
             {imageMedia.length > 0 ? (
               <div className="flex flex-wrap gap-4">
-
                 {imageMedia.map(
                   (media) => (
                     <div
                       key={media.id}
                       className="relative group"
                     >
-
                       <img
                         src={`${BASE_URL}${media.fileUrl}`}
                         alt={media.namaFile}
@@ -1220,11 +1190,9 @@ export default function WayangEdit() {
                       >
                         ×
                       </button>
-
                     </div>
                   ),
                 )}
-
               </div>
             ) : (
               <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-5 py-6 text-center">
@@ -1246,11 +1214,13 @@ export default function WayangEdit() {
                     height="18"
                     rx="2"
                   />
+
                   <circle
                     cx="8.5"
                     cy="8.5"
                     r="1.5"
                   />
+
                   <path d="m21 15-5-5L5 21" />
                 </svg>
 
@@ -1259,15 +1229,12 @@ export default function WayangEdit() {
                 </p>
               </div>
             )}
-
           </div>
 
           {/* ADD IMAGE */}
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-
             <label className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl cursor-pointer transition-colors">
-
               <svg
                 width="17"
                 height="17"
@@ -1280,6 +1247,7 @@ export default function WayangEdit() {
               >
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                 <polyline points="17 8 12 3 7 8" />
+
                 <line
                   x1="12"
                   y1="3"
@@ -1306,7 +1274,6 @@ export default function WayangEdit() {
 
             {fileName && (
               <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 min-w-0">
-
                 <svg
                   width="16"
                   height="16"
@@ -1324,24 +1291,18 @@ export default function WayangEdit() {
                 <span className="truncate">
                   {fileName}
                 </span>
-
               </div>
             )}
-
           </div>
 
           <p className="text-[11px] sm:text-xs text-slate-400 mt-3">
             Jika memilih gambar baru, gambar tersebut akan ditambahkan ke media wayang.
           </p>
-
         </div>
 
-        {/* ===================================================
-            FOOTER FORM
-        ==================================================== */}
+
 
         <div className="px-5 sm:px-8 py-5 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-
           <div className="text-[11px] sm:text-xs text-slate-400">
             <span className="text-red-500 font-bold">
               *
@@ -1350,7 +1311,6 @@ export default function WayangEdit() {
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
-
             <Link
               to="/admin/dashboard"
               className="flex-1 sm:flex-none text-center px-5 sm:px-6 py-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-800 no-underline transition-colors"
@@ -1383,6 +1343,7 @@ export default function WayangEdit() {
                       r="9"
                       strokeOpacity="0.3"
                     />
+
                     <path d="M21 12a9 9 0 0 1-9 9" />
                   </svg>
 
@@ -1407,19 +1368,13 @@ export default function WayangEdit() {
                 </>
               )}
             </button>
-
           </div>
-
         </div>
-
       </form>
 
-      {/* =====================================================
-          FOOTER INFO
-      ====================================================== */}
+
 
       <div className="flex items-center justify-center gap-2 mt-5 pb-4 text-[11px] sm:text-xs text-slate-400 text-center">
-
         <svg
           width="14"
           height="14"
@@ -1436,12 +1391,14 @@ export default function WayangEdit() {
             cy="12"
             r="10"
           />
+
           <line
             x1="12"
             y1="16"
             x2="12"
             y2="12"
           />
+
           <line
             x1="12"
             y1="8"
@@ -1451,16 +1408,12 @@ export default function WayangEdit() {
         </svg>
 
         Pastikan seluruh perubahan data wayang sudah benar sebelum disimpan.
-
       </div>
-
     </div>
   )
 }
 
-// =========================================================
-// ERROR MESSAGE
-// =========================================================
+
 
 function getErrorMessage(
   error: unknown,

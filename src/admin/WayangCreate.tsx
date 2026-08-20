@@ -4,6 +4,7 @@ import {
   useState,
   type ChangeEvent,
   type FormEvent,
+  type KeyboardEvent,
 } from 'react'
 
 import { Link, useNavigate } from 'react-router-dom'
@@ -90,17 +91,24 @@ interface AxiosErrorLike {
 const isAxiosErrorLike = (
   error: unknown,
 ): error is AxiosErrorLike => {
-  if (typeof error !== 'object' || error === null) {
+  if (
+    typeof error !== 'object' ||
+    error === null
+  ) {
     return false
   }
 
-  return 'response' in error || 'message' in error
+  return (
+    'response' in error ||
+    'message' in error
+  )
 }
 
 export default function WayangCreate() {
   const navigate = useNavigate()
 
-  const fileRef = useRef<HTMLInputElement>(null)
+  const fileRef =
+    useRef<HTMLInputElement>(null)
 
   const [formData, setFormData] =
     useState<WayangFormData>({
@@ -146,23 +154,26 @@ export default function WayangCreate() {
     useState(false)
 
 
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoadingData(true)
         setError('')
 
-        const [golonganResponse, penyimpananResponse] =
-          await Promise.all([
-            api.get('/golongan'),
-            api.get('/penyimpanan'),
-          ])
+        const [
+          golonganResponse,
+          penyimpananResponse,
+        ] = await Promise.all([
+
+          api.get('/golongan/all'),
+
+          api.get('/penyimpanan'),
+        ])
 
         const golonganData =
           golonganResponse.data?.data
 
-        const penyimpananData =
+        const penyimpananResponseData =
           penyimpananResponse.data?.data
 
         if (Array.isArray(golonganData)) {
@@ -171,8 +182,15 @@ export default function WayangCreate() {
           setGolonganList([])
         }
 
-        if (Array.isArray(penyimpananData)) {
-          setPenyimpananList(penyimpananData)
+
+        if (
+          Array.isArray(
+            penyimpananResponseData,
+          )
+        ) {
+          setPenyimpananList(
+            penyimpananResponseData,
+          )
         } else {
           setPenyimpananList([])
         }
@@ -197,15 +215,17 @@ export default function WayangCreate() {
   }, [])
 
 
-
   const handleChange = (
     e: ChangeEvent<
-      HTMLInputElement |
-      HTMLTextAreaElement |
-      HTMLSelectElement
+      | HTMLInputElement
+      | HTMLTextAreaElement
+      | HTMLSelectElement
     >,
   ) => {
-    const { name, value } = e.target
+    const {
+      name,
+      value,
+    } = e.target
 
     setFormData((prev) => ({
       ...prev,
@@ -216,7 +236,6 @@ export default function WayangCreate() {
       setError('')
     }
   }
-
 
   const handleTipeGolonganChange = (
     e: ChangeEvent<HTMLSelectElement>,
@@ -235,8 +254,16 @@ export default function WayangCreate() {
   }
 
 
+  const filteredGolongan =
+    golonganList.filter(
+      (golongan) =>
+        golongan.tipeGolongan ===
+        formData.tipeGolongan,
+    )
+
   const handleRelasiSearch = async () => {
-    const query = relasiQuery.trim()
+    const query =
+      relasiQuery.trim()
 
     if (!query) {
       setRelasiResult([])
@@ -246,14 +273,15 @@ export default function WayangCreate() {
     try {
       setRelasiSearching(true)
 
-      const response = await api.get('/wayang', {
-        params: {
-          search: query,
-          limit: 8,
-        },
-      })
+      const response =
+        await api.get('/wayang', {
+          params: {
+            search: query,
+            limit: 8,
+          },
+        })
 
-      const list: WayangSearchResult[] =
+      const list =
         response.data?.data?.data
 
       if (!Array.isArray(list)) {
@@ -261,15 +289,21 @@ export default function WayangCreate() {
         return
       }
 
-      const filteredList = list.filter(
-        (wayang) =>
-          !relasiSelected.some(
-            (selected) =>
-              selected.id === wayang.id,
-          ),
-      )
+      const filteredList =
+        list.filter(
+          (
+            wayang: WayangSearchResult,
+          ) =>
+            !relasiSelected.some(
+              (selected) =>
+                selected.id ===
+                wayang.id,
+            ),
+        )
 
-      setRelasiResult(filteredList)
+      setRelasiResult(
+        filteredList,
+      )
     } catch (err: unknown) {
       console.error(
         'Search relasi wayang error:',
@@ -282,61 +316,71 @@ export default function WayangCreate() {
     }
   }
 
+
   const handleRelasiKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
+    e: KeyboardEvent<HTMLInputElement>,
   ) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      handleRelasiSearch()
+
+      void handleRelasiSearch()
     }
   }
 
   const addRelasi = (
     wayang: WayangSearchResult,
   ) => {
-    setRelasiSelected((prev) => [
-      ...prev,
-      wayang,
-    ])
+    setRelasiSelected(
+      (prev) => [
+        ...prev,
+        wayang,
+      ],
+    )
 
-    setRelasiResult((prev) =>
-      prev.filter(
-        (item) => item.id !== wayang.id,
-      ),
+    setRelasiResult(
+      (prev) =>
+        prev.filter(
+          (item) =>
+            item.id !==
+            wayang.id,
+        ),
     )
   }
 
-  const removeRelasi = (id: number) => {
-    setRelasiSelected((prev) =>
-      prev.filter(
-        (item) => item.id !== id,
-      ),
+
+  const removeRelasi = (
+    id: number,
+  ) => {
+    setRelasiSelected(
+      (prev) =>
+        prev.filter(
+          (item) =>
+            item.id !== id,
+        ),
     )
   }
-
-
-  const filteredGolongan =
-    golonganList.filter(
-      (golongan) =>
-        golongan.tipeGolongan ===
-        formData.tipeGolongan,
-    )
 
 
 
   const validateForm = (): boolean => {
     if (!formData.nama.trim()) {
-      setError('Nama wayang wajib diisi.')
+      setError(
+        'Nama wayang wajib diisi.',
+      )
       return false
     }
 
     if (!formData.daerah) {
-      setError('Daerah asal wajib dipilih.')
+      setError(
+        'Daerah asal wajib dipilih.',
+      )
       return false
     }
 
     if (!formData.gaya) {
-      setError('Gaya wajib dipilih.')
+      setError(
+        'Gaya wajib dipilih.',
+      )
       return false
     }
 
@@ -365,7 +409,6 @@ export default function WayangCreate() {
   }
 
 
-
   const handleSubmit = async (
     e: FormEvent<HTMLFormElement>,
   ) => {
@@ -379,23 +422,40 @@ export default function WayangCreate() {
 
     try {
       setLoadingSubmit(true)
+
+
       const payload = {
-        nama: formData.nama.trim(),
-        gaya: formData.gaya,
-        daerah: formData.daerah,
-        deskripsi: formData.deskripsi.trim()
-          ? formData.deskripsi.trim()
-          : undefined,
-        cerita: formData.cerita.trim()
-          ? formData.cerita.trim()
-          : undefined,
-        kondisi: formData.kondisi || undefined,
-        golonganId: Number(
-          formData.golonganId,
-        ),
-        penyimpananId: Number(
-          formData.penyimpananId,
-        ),
+        nama:
+          formData.nama.trim(),
+
+        gaya:
+          formData.gaya,
+
+        daerah:
+          formData.daerah,
+
+        deskripsi:
+          formData.deskripsi.trim()
+            ? formData.deskripsi.trim()
+            : undefined,
+
+        cerita:
+          formData.cerita.trim()
+            ? formData.cerita.trim()
+            : undefined,
+
+        kondisi:
+          formData.kondisi || undefined,
+
+        golonganId:
+          Number(
+            formData.golonganId,
+          ),
+
+        penyimpananId:
+          Number(
+            formData.penyimpananId,
+          ),
       }
 
       console.log(
@@ -403,12 +463,14 @@ export default function WayangCreate() {
         payload,
       )
 
-      const response = await api.post(
-        '/wayang',
-        payload,
-      )
 
-      const wayangId: number =
+      const response =
+        await api.post(
+          '/wayang',
+          payload,
+        )
+
+      const wayangId =
         response.data?.data?.id
 
       if (!wayangId) {
@@ -417,12 +479,12 @@ export default function WayangCreate() {
         )
       }
 
-      // 2. Upload gambar jika ada
       const selectedFile =
         fileRef.current?.files?.[0]
 
       if (selectedFile) {
-        const body = new FormData()
+        const body =
+          new FormData()
 
         body.append(
           'file',
@@ -451,8 +513,9 @@ export default function WayangCreate() {
         )
       }
 
-      // 3. Kembali ke dashboard
-      navigate('/admin/dashboard')
+      navigate(
+        '/admin/dashboard',
+      )
     } catch (err: unknown) {
       console.error(
         'Create wayang error:',
@@ -473,7 +536,6 @@ export default function WayangCreate() {
 
   return (
     <div className="w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-
 
       <div className="w-full mb-7 lg:mb-8">
 
@@ -505,8 +567,6 @@ export default function WayangCreate() {
 
         <div className="flex items-center gap-3 sm:gap-4">
 
-          {/* ICON */}
-
           <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
 
             <svg
@@ -528,6 +588,7 @@ export default function WayangCreate() {
           </div>
 
           <div>
+
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
               Tambah Wayang Baru
             </h1>
@@ -535,10 +596,12 @@ export default function WayangCreate() {
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Tambahkan data wayang baru ke dalam sistem.
             </p>
+
           </div>
 
         </div>
       </div>
+
 
       {error && (
         <div className="w-full mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 sm:px-5 py-4">
@@ -571,6 +634,7 @@ export default function WayangCreate() {
           </div>
 
           <div>
+
             <p className="text-sm font-bold text-red-800">
               Terjadi kesalahan
             </p>
@@ -578,11 +642,11 @@ export default function WayangCreate() {
             <p className="text-xs sm:text-sm text-red-700 mt-0.5">
               {error}
             </p>
+
           </div>
 
         </div>
       )}
-
 
 
       <form
@@ -618,6 +682,7 @@ export default function WayangCreate() {
             </div>
 
             <div>
+
               <h2 className="text-sm sm:text-base font-bold text-slate-800">
                 Informasi Wayang
               </h2>
@@ -625,6 +690,7 @@ export default function WayangCreate() {
               <p className="text-[11px] sm:text-xs text-slate-400 mt-1">
                 Masukkan informasi dasar mengenai wayang.
               </p>
+
             </div>
 
           </div>
@@ -743,7 +809,6 @@ export default function WayangCreate() {
 
         </div>
 
-   
         <div className="px-5 sm:px-8 py-5 sm:py-6 border-t border-b border-slate-100">
 
           <div className="flex items-center gap-3 sm:gap-4">
@@ -770,6 +835,7 @@ export default function WayangCreate() {
             </div>
 
             <div>
+
               <h2 className="text-sm sm:text-base font-bold text-slate-800">
                 Klasifikasi Wayang
               </h2>
@@ -777,6 +843,7 @@ export default function WayangCreate() {
               <p className="text-[11px] sm:text-xs text-slate-400 mt-1">
                 Tentukan golongan dan lokasi penyimpanan wayang.
               </p>
+
             </div>
 
           </div>
@@ -805,11 +872,16 @@ export default function WayangCreate() {
                 id="tipeGolongan"
                 name="tipeGolongan"
                 value={formData.tipeGolongan}
-                onChange={handleTipeGolonganChange}
-                className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-800 outline-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                onChange={
+                  handleTipeGolonganChange
+                }
+                disabled={loadingData}
+                className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-800 outline-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
               >
                 <option value="">
-                  Pilih tipe golongan
+                  {loadingData
+                    ? 'Memuat golongan...'
+                    : 'Pilih tipe golongan'}
                 </option>
 
                 {TIPE_GOLONGAN_LIST.map(
@@ -855,7 +927,10 @@ export default function WayangCreate() {
                   {loadingData
                     ? 'Memuat golongan...'
                     : formData.tipeGolongan
-                      ? 'Pilih nama golongan'
+                      ? filteredGolongan.length ===
+                        0
+                        ? 'Tidak ada golongan'
+                        : 'Pilih nama golongan'
                       : 'Pilih tipe golongan dulu'}
                 </option>
 
@@ -865,11 +940,23 @@ export default function WayangCreate() {
                       key={golongan.id}
                       value={golongan.id}
                     >
-                      {golongan.namaGolongan}
+                      {
+                        golongan.namaGolongan
+                      }
                     </option>
                   ),
                 )}
               </select>
+
+              {formData.tipeGolongan &&
+                !loadingData &&
+                filteredGolongan.length ===
+                  0 && (
+                  <p className="text-[11px] sm:text-xs text-amber-600 mt-2">
+                    Belum ada golongan untuk tipe
+                    ini.
+                  </p>
+                )}
 
             </div>
 
@@ -890,7 +977,9 @@ export default function WayangCreate() {
               <select
                 id="penyimpananId"
                 name="penyimpananId"
-                value={formData.penyimpananId}
+                value={
+                  formData.penyimpananId
+                }
                 onChange={handleChange}
                 disabled={loadingData}
                 className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-800 outline-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
@@ -898,7 +987,8 @@ export default function WayangCreate() {
                 <option value="">
                   {loadingData
                     ? 'Memuat penyimpanan...'
-                    : penyimpananList.length === 0
+                    : penyimpananList.length ===
+                        0
                       ? 'Tidak ada kotak tersedia'
                       : 'Pilih kotak penyimpanan'}
                 </option>
@@ -909,7 +999,9 @@ export default function WayangCreate() {
                       key={penyimpanan.id}
                       value={penyimpanan.id}
                     >
-                      {penyimpanan.namaKotak}
+                      {
+                        penyimpanan.namaKotak
+                      }
                     </option>
                   ),
                 )}
@@ -919,7 +1011,9 @@ export default function WayangCreate() {
                 penyimpananList.length >
                   0 && (
                   <p className="text-[11px] sm:text-xs text-slate-400 mt-2">
-                    {penyimpananList.length}{' '}
+                    {
+                      penyimpananList.length
+                    }{' '}
                     kotak penyimpanan tersedia.
                   </p>
                 )}
@@ -935,6 +1029,7 @@ export default function WayangCreate() {
                 className="block text-xs sm:text-sm font-bold text-slate-700 mb-2"
               >
                 Kondisi
+
                 <span className="ml-2 text-[10px] sm:text-xs font-normal text-slate-400">
                   Opsional
                 </span>
@@ -996,6 +1091,7 @@ export default function WayangCreate() {
             </div>
 
             <div>
+
               <h2 className="text-sm sm:text-base font-bold text-slate-800">
                 Informasi Tambahan
               </h2>
@@ -1003,6 +1099,7 @@ export default function WayangCreate() {
               <p className="text-[11px] sm:text-xs text-slate-400 mt-1">
                 Tambahkan deskripsi dan cerita mengenai wayang.
               </p>
+
             </div>
 
           </div>
@@ -1022,6 +1119,7 @@ export default function WayangCreate() {
                 className="block text-xs sm:text-sm font-bold text-slate-700 mb-2"
               >
                 Deskripsi
+
                 <span className="ml-2 text-[10px] sm:text-xs font-normal text-slate-400">
                   Opsional
                 </span>
@@ -1031,7 +1129,9 @@ export default function WayangCreate() {
                 id="deskripsi"
                 name="deskripsi"
                 rows={4}
-                value={formData.deskripsi}
+                value={
+                  formData.deskripsi
+                }
                 onChange={handleChange}
                 placeholder="Masukkan deskripsi singkat tentang wayang..."
                 className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 outline-none resize-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
@@ -1048,6 +1148,7 @@ export default function WayangCreate() {
                 className="block text-xs sm:text-sm font-bold text-slate-700 mb-2"
               >
                 Cerita
+
                 <span className="ml-2 text-[10px] sm:text-xs font-normal text-slate-400">
                   Opsional
                 </span>
@@ -1057,7 +1158,9 @@ export default function WayangCreate() {
                 id="cerita"
                 name="cerita"
                 rows={6}
-                value={formData.cerita}
+                value={
+                  formData.cerita
+                }
                 onChange={handleChange}
                 placeholder="Masukkan cerita atau latar belakang tokoh wayang..."
                 className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 outline-none resize-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
@@ -1068,10 +1171,6 @@ export default function WayangCreate() {
           </div>
 
         </div>
-
-        {/* ===================================================
-            SECTION 4 — RELASI
-        ==================================================== */}
 
         <div className="px-5 sm:px-8 py-5 sm:py-6 border-t border-b border-slate-100">
 
@@ -1095,22 +1194,26 @@ export default function WayangCreate() {
                   cy="5"
                   r="3"
                 />
+
                 <circle
                   cx="6"
                   cy="12"
                   r="3"
                 />
+
                 <circle
                   cx="18"
                   cy="19"
                   r="3"
                 />
+
                 <line
                   x1="8.6"
                   y1="13.5"
                   x2="15.4"
                   y2="17.5"
                 />
+
                 <line
                   x1="15.4"
                   y1="6.5"
@@ -1122,6 +1225,7 @@ export default function WayangCreate() {
             </div>
 
             <div>
+
               <h2 className="text-sm sm:text-base font-bold text-slate-800">
                 Relasi Wayang
               </h2>
@@ -1129,6 +1233,7 @@ export default function WayangCreate() {
               <p className="text-[11px] sm:text-xs text-slate-400 mt-1">
                 Hubungkan wayang ini dengan tokoh wayang lainnya.
               </p>
+
             </div>
 
           </div>
@@ -1139,7 +1244,8 @@ export default function WayangCreate() {
 
           {/* SELECTED RELATION */}
 
-          {relasiSelected.length > 0 && (
+          {relasiSelected.length >
+            0 && (
             <div className="mb-4">
 
               <p className="text-xs sm:text-sm font-bold text-slate-700 mb-2">
@@ -1154,8 +1260,11 @@ export default function WayangCreate() {
                       key={relasi.id}
                       className="inline-flex items-center gap-2 pl-3 pr-2 py-1.5 bg-blue-50 border border-blue-100 text-blue-700 text-[11px] sm:text-xs font-semibold rounded-full"
                     >
+
                       <span>
-                        {relasi.nama}
+                        {
+                          relasi.nama
+                        }
                       </span>
 
                       <button
@@ -1210,7 +1319,9 @@ export default function WayangCreate() {
             <input
               id="relasiSearch"
               type="search"
-              value={relasiQuery}
+              value={
+                relasiQuery
+              }
               onChange={(e) =>
                 setRelasiQuery(
                   e.target.value,
@@ -1225,8 +1336,8 @@ export default function WayangCreate() {
 
             <button
               type="button"
-              onClick={
-                handleRelasiSearch
+              onClick={() =>
+                void handleRelasiSearch()
               }
               disabled={
                 relasiSearching
@@ -1242,7 +1353,8 @@ export default function WayangCreate() {
 
           {/* SEARCH RESULT */}
 
-          {relasiResult.length > 0 && (
+          {relasiResult.length >
+            0 && (
             <div className="mt-3 border border-slate-200 rounded-xl divide-y divide-slate-100 overflow-hidden">
 
               {relasiResult.map(
@@ -1251,7 +1363,9 @@ export default function WayangCreate() {
                     type="button"
                     key={wayang.id}
                     onClick={() =>
-                      addRelasi(wayang)
+                      addRelasi(
+                        wayang,
+                      )
                     }
                     className="w-full flex items-center justify-between gap-4 px-4 py-3 text-left bg-white hover:bg-slate-50 cursor-pointer border-none transition-colors"
                   >
@@ -1259,11 +1373,15 @@ export default function WayangCreate() {
                     <div className="min-w-0">
 
                       <p className="text-xs sm:text-sm font-semibold text-slate-800 truncate">
-                        {wayang.nama}
+                        {
+                          wayang.nama
+                        }
                       </p>
 
                       <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">
-                        {wayang.noWayang}
+                        {
+                          wayang.noWayang
+                        }
                       </p>
 
                     </div>
@@ -1287,6 +1405,7 @@ export default function WayangCreate() {
                             x2="12"
                             y2="19"
                           />
+
                           <line
                             x1="5"
                             y1="12"
@@ -1308,13 +1427,15 @@ export default function WayangCreate() {
 
           {relasiQuery.trim() &&
             !relasiSearching &&
-            relasiResult.length === 0 && (
+            relasiResult.length ===
+              0 && (
               <p className="text-xs text-slate-400 mt-3">
                 Tidak ada wayang yang ditemukan.
               </p>
             )}
 
         </div>
+
 
         <div className="px-5 sm:px-8 py-5 sm:py-6 border-t border-b border-slate-100">
 
@@ -1340,17 +1461,20 @@ export default function WayangCreate() {
                   height="18"
                   rx="2"
                 />
+
                 <circle
                   cx="8.5"
                   cy="8.5"
                   r="1.5"
                 />
+
                 <path d="m21 15-5-5L5 21" />
               </svg>
 
             </div>
 
             <div>
+
               <h2 className="text-sm sm:text-base font-bold text-slate-800">
                 Gambar Wayang
               </h2>
@@ -1358,6 +1482,7 @@ export default function WayangCreate() {
               <p className="text-[11px] sm:text-xs text-slate-400 mt-1">
                 Upload gambar untuk dokumentasi wayang.
               </p>
+
             </div>
 
           </div>
@@ -1397,12 +1522,16 @@ export default function WayangCreate() {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) =>
+                onChange={(e) => {
                   setFileName(
                     e.target.files?.[0]
                       ?.name ?? '',
                   )
-                }
+
+                  if (error) {
+                    setError('')
+                  }
+                }}
               />
 
             </label>
@@ -1439,17 +1568,17 @@ export default function WayangCreate() {
 
         </div>
 
-        {/* ===================================================
-            FOOTER FORM
-        ==================================================== */}
 
         <div className="px-5 sm:px-8 py-5 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
 
           <div className="text-[11px] sm:text-xs text-slate-400">
+
             <span className="text-red-500 font-bold">
               *
             </span>{' '}
+
             Field wajib diisi
+
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -1520,7 +1649,6 @@ export default function WayangCreate() {
 
       </form>
 
-
       <div className="flex items-center justify-center gap-2 mt-5 pb-4 text-[11px] sm:text-xs text-slate-400 text-center">
 
         <svg
@@ -1562,8 +1690,6 @@ export default function WayangCreate() {
     </div>
   )
 }
-
-
 function getErrorMessage(
   error: unknown,
   fallback: string,
@@ -1575,8 +1701,14 @@ function getErrorMessage(
   const backendMessage =
     error.response?.data?.message
 
-  if (Array.isArray(backendMessage)) {
-    return backendMessage.join(', ')
+  if (
+    Array.isArray(
+      backendMessage,
+    )
+  ) {
+    return backendMessage.join(
+      ', ',
+    )
   }
 
   if (
