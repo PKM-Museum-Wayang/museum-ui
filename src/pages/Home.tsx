@@ -1,10 +1,20 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import gambarLokasi from '../assets/lokasi.png'
 import koleksiGambar1 from '../assets/foto-koleksi-1.jpg'
 import koleksiGambar2 from '../assets/foto-koleksi-2.jpeg'
+import api from '../lib/api'
 
 export default function Home() {
+
+  const [totalWayang, setTotalWayang] = useState<number | null>(null)
+
+  useEffect(() => {
+    api.get('/wayang?limit=1').then(res => setTotalWayang(res.data.data.pagination.total))
+    .catch(() => {})
+  }, [])
+
   return (
     <>
       {/* ── HERO ── */}
@@ -76,9 +86,8 @@ export default function Home() {
       {/* ── COUNTER ── */}
       <section className="px-8 md:px-20 py-20 border-b hairline bg-panel">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 reveal">
-          {/* TODO: angka sementara — nantinya diambil dari API */}
           {[
-            { num: '100+', label: 'Koleksi Wayang' },
+            { num: totalWayang !== null ? `${totalWayang}+`: '...' , label: 'Koleksi Wayang' },
             { num: '9', label: 'Kotak Penyimpanan' },
             { num: '5', label: 'Jenis Wayang' },
             { num: '20+', label: 'Kegiatan per Tahun' },
