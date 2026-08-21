@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import gambarInterior from '../assets/bg.jpg'
 
 const TIM = [
   { nama: 'Drs. Sutarwinarno', peran: 'Pemilik Wayang' },
@@ -30,7 +31,9 @@ export default function About() {
       <section className="px-8 md:px-20 py-24 md:py-32 border-b hairline">
         <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-10 md:gap-16">
           <div className="md:col-span-7 reveal">
-            <div className="placeholder aspect-[4/3]">INTERIOR MUSEUM · GALERI UTAMA</div>
+            <div className="placeholder aspect-[4/3]">
+              <img src={gambarInterior} alt="INTERIOR MUSEUM · GALERI UTAMA" />
+            </div>
           </div>
           <div className="md:col-span-5 reveal" style={{ ['--rd' as string]: '200ms' }}>
             <span className="eyebrow">Sejarah Koleksi</span>

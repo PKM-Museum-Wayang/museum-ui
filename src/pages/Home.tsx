@@ -1,7 +1,89 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
+import gambarLokasi from '../assets/lokasi.png'
+import koleksiGambar1 from '../assets/foto-koleksi-1.jpg'
+import koleksiGambar2 from '../assets/foto-koleksi-2.jpeg'
+import api, { BASE_URL } from '../lib/api'
+
+const TIPE_GOLONGAN_LABEL: Record<string, string> = {
+  SIMPINGAN_KIRI: 'Simpingan Kiri',
+  SIMPINGAN_KANAN: 'Simpingan Kanan',
+  DUDHAHAN: 'Dudhahan',
+}
+
+interface MediaWayang {
+  id: number
+  jenis: 'IMAGE' | 'VIDEO'
+  fileUrl: string
+}
+
+interface WayangApi {
+  id: number
+  nama: string
+  golonganId: number
+  media: MediaWayang[]
+}
+
+interface Golongan {
+  id: number
+  namaGolongan: string
+  tipeGolongan: string
+}
+
+interface KoleksiPreviewItem {
+  id: number
+  nama: string
+  tipeGolongan: string
+  gambar?: string
+}
+
+// Fisher–Yates, biar acaknya merata (bukan .sort(() => Math.random() - 0.5)
+// yang bias)
+const shuffle = <T,>(arr: T[]): T[] => {
+  const result = [...arr]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
 
 export default function Home() {
+
+  const [totalWayang, setTotalWayang] = useState<number | null>(null)
+  const [totalKotak, setTotalKotak] = useState<number | null>(null)
+  const [totalJenis, setTotalJenis] = useState<number | null>(null)
+  const [randomKoleksi, setRandomKoleksi] = useState<KoleksiPreviewItem[]>([])
+
+  useEffect(() => {
+    Promise.all([
+      api.get('/wayang?limit=100'),
+      api.get('/penyimpanan'),
+      api.get('/golongan/all')
+    ]).then(([wayangRes, kotakRes, golonganRes]) => {
+      setTotalWayang(wayangRes.data.data.pagination.total)
+      setTotalKotak(kotakRes.data.data.length)
+      setTotalJenis(golonganRes.data.data.length)
+
+      const wayangList: WayangApi[] = wayangRes.data.data.data
+      const golonganList: Golongan[] = golonganRes.data.data
+      const golonganMap = new Map(golonganList.map(g => [g.id, g]))
+
+      const koleksi: KoleksiPreviewItem[] = wayangList.map(w => {
+        const gambarMedia = w.media.find(m => m.jenis === 'IMAGE')
+        return {
+          id: w.id,
+          nama: w.nama,
+          tipeGolongan: golonganMap.get(w.golonganId)?.tipeGolongan ?? '',
+          gambar: gambarMedia ? `${BASE_URL}${gambarMedia.fileUrl}` : undefined,
+        }
+      })
+
+      setRandomKoleksi(shuffle(koleksi).slice(0, 4))
+    }).catch(() => {})
+  }, [])
+
   return (
     <>
       {/* ── HERO ── */}
@@ -9,17 +91,18 @@ export default function Home() {
         {/* Background image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
-          style={{ backgroundImage: "url('/museum-wayang.jpg')" }}
+          // style={{ backgroundImage: "url('/museum-wayang.jpg')" }}
+          style={{ backgroundImage: "url('/bg.JPG')" }}
         />
         {/* Gradient overlay — mengikuti warna latar tema (gelap/terang) */}
         <div className="absolute inset-0 z-10 hero-overlay" />
 
         <div className="relative z-20 text-center px-8 animate-[fadeInUp_1s_ease_0.3s_both]">
-          <p className="eyebrow mb-6">Museum Wayang · Universitas Sanata Dharma</p>
+          <p className="eyebrow mb-6">Museum Wayang</p>
           <h1 className="font-display text-[clamp(48px,8vw,104px)] leading-[1] text-cream">
             Koleksi Wayang Sutarwin
           </h1>
-          <p className="mt-8 text-cream/60 text-lg max-w-md mx-auto leading-relaxed">
+          <p className="mt-8 text-cream/70 text-lg max-w-md mx-auto leading-relaxed">
             Merawat warisan, melanjutkan cerita.
           </p>
           <div className="mt-12 flex flex-wrap gap-4 justify-center">
@@ -58,8 +141,12 @@ export default function Home() {
           </div>
           <div className="reveal" style={{ ['--rd' as string]: '150ms' }}>
             <div className="grid grid-cols-2 gap-4">
-              <div className="placeholder aspect-[3/4]">FOTO KOLEKSI 1</div>
-              <div className="placeholder aspect-[3/4] mt-8">FOTO KOLEKSI 2</div>
+              <div className="placeholder aspect-[4/3]">
+                <img src={koleksiGambar1} alt="Koleksi 1" className="w-full h-full object-contain" />
+              </div>
+              <div className="placeholder aspect-[3/4] mt-8">
+                <img src={koleksiGambar2} alt="Koleksi 2" />
+              </div>
             </div>
           </div>
         </div>
@@ -67,13 +154,11 @@ export default function Home() {
 
       {/* ── COUNTER ── */}
       <section className="px-8 md:px-20 py-20 border-b hairline bg-panel">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 reveal">
-          {/* TODO: angka sementara — nantinya diambil dari API */}
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-8 reveal">
           {[
-            { num: '100+', label: 'Koleksi Wayang' },
-            { num: '9', label: 'Kotak Penyimpanan' },
-            { num: '5', label: 'Jenis Wayang' },
-            { num: '20+', label: 'Kegiatan per Tahun' },
+            { num: totalWayang !== null ? `${totalWayang}+`: '...' , label: 'Koleksi Wayang' },
+            { num: totalKotak !== null ? `${totalKotak}`: '...', label: 'Kotak Penyimpanan' },
+            { num: totalJenis !== null ? `${totalJenis}`: '...', label: 'Jenis Wayang' },
           ].map(({ num, label }) => (
             <div key={label} className="text-center border-t hairline pt-8">
               <p className="font-display text-[clamp(40px,6vw,72px)] text-gold number-tabular leading-none">
@@ -101,21 +186,33 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {['ARJUNA', 'BIMA', 'KRESNA', 'SRIKANDI'].map((name, i) => (
+            {randomKoleksi.map((k, i) => (
               <Link
-                key={name}
-                to="/koleksi"
+                key={k.id}
+                to={`/koleksi/${k.id}`}
                 className="group block lift border hairline p-3 reveal"
                 style={{ ['--rd' as string]: `${i * 80}ms` }}
               >
-                <div className="placeholder aspect-[3/4] group-hover:opacity-80 transition-opacity">
-                  {name}
-                </div>
+                {k.gambar ? (
+                  <div className="aspect-[3/4] overflow-hidden">
+                    <img
+                      src={k.gambar}
+                      alt={k.nama}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    />
+                  </div>
+                ) : (
+                  <div className="placeholder aspect-[3/4] group-hover:opacity-80 transition-opacity">
+                    {k.nama.toUpperCase()}
+                  </div>
+                )}
                 <div className="mt-4 px-1">
                   <h4 className="font-display text-xl text-cream group-hover:text-gold transition-colors">
-                    {name.charAt(0) + name.slice(1).toLowerCase()}
+                    {k.nama}
                   </h4>
-                  <p className="text-[10px] uppercase tracking-[0.15em] text-cream/45 mt-1">Wayang Kulit</p>
+                  <p className="text-[10px] uppercase tracking-[0.15em] text-cream/45 mt-1">
+                    {TIPE_GOLONGAN_LABEL[k.tipeGolongan] ?? 'Wayang Kulit'}
+                  </p>
                 </div>
               </Link>
             ))}
@@ -126,23 +223,19 @@ export default function Home() {
       {/* ── LOKASI ── */}
       <section className="px-8 md:px-20 py-24 md:py-28 border-b hairline">
         <div className="max-w-7xl mx-auto reveal">
-          <span className="eyebrow">Kunjungi Kami</span>
           <h2 className="font-display text-cream text-[clamp(28px,3.5vw,44px)] mt-3 mb-10">
             Lokasi Museum
           </h2>
           <div className="border hairline aspect-[16/6] flex items-center justify-center bg-panel">
-            <div className="text-center">
-              <svg className="mx-auto mb-4 text-gold/40" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              <p className="text-[10px] uppercase tracking-[0.15em] text-cream/30">Peta lokasi akan segera tersedia</p>
-              <p className="text-sm text-cream/50 mt-3">Kampus II USD, Jl. Affandi, Mrican, Yogyakarta 55281</p>
-            </div>
+            <img src={gambarLokasi} alt="Lokasi Museum Wayang" />
+          </div>
+          <div className="btn mt-8 flex flex-wrap gap-4 justify-center">
+            <button className="btn-primary">
+              <a href="https://maps.app.goo.gl/Wv8V3GyPrPfV5ACD8" target='_blank'>Lokasi lebih lanjut →</a>
+            </button>
           </div>
         </div>
       </section>
-
       <Footer />
     </>
   )

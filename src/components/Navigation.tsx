@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useTheme } from '../lib/theme'
+import logo from '../assets/logo.png'
 
 const navLinks = [
   { to: '/', label: 'Beranda', end: true },
@@ -50,10 +51,11 @@ export default function Navigation() {
   return (
     <>
       <nav className={`museum-nav fixed top-0 left-0 right-0 z-50 ${scrolled ? 'scrolled' : ''}`}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <NavLink to="/" className="museum-nav-logo">wayang</NavLink>
+        <div className="max-w-8xl mx-auto flex items-center justify-between">
+          <NavLink to="/" className="museum-nav-logo">
+            <img src={logo} alt="wayang" className="h-25 w-auto object-contain" />
+          </NavLink>
 
-          {/* Desktop links */}
           <ul className="hidden md:flex items-center gap-10 list-none m-0 p-0">
             {navLinks.map(({ to, label, end }) => (
               <li key={to}>
@@ -73,21 +75,20 @@ export default function Navigation() {
             </li>
           </ul>
 
-          {/* Mobile hamburger */}
-          {/* <button
-            className={`museum-hamburger md:hidden${mobileOpen ? ' active' : ''}`}
+          <button
+            className={`museum-hamburger md:hidden ${mobileOpen ? 'active' : ''}`}
             aria-label="Buka menu"
             onClick={() => setMobileOpen(v => !v)}
           >
             <span />
             <span />
             <span />
-          </button> */}
+          </button>
         </div>
       </nav>
 
       {/* Mobile panel */}
-      <div className={`museum-mobile-nav md:hidden${mobileOpen ? ' open' : ''}`}>
+      <div className={`museum-mobile-nav md:hidden ${mobileOpen ? ' open' : ''}`}>
         <ul className="flex flex-col items-center gap-8 text-[0.95rem] list-none m-0 p-0">
           {navLinks.map(({ to, label, end }) => (
             <li key={to}>
