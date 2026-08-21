@@ -48,7 +48,7 @@ export default function Koleksi() {
   useEffect(() => {
     Promise.all([
       api.get('/wayang?limit=100'),
-      api.get('/golongan'),
+      api.get('/golongan/all'),
     ])
       .then(([wayangRes, golonganRes]) => {
         const wayangList: WayangApi[] = wayangRes.data.data.data

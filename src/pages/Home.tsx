@@ -4,15 +4,84 @@ import Footer from '../components/Footer'
 import gambarLokasi from '../assets/lokasi.png'
 import koleksiGambar1 from '../assets/foto-koleksi-1.jpg'
 import koleksiGambar2 from '../assets/foto-koleksi-2.jpeg'
-import api from '../lib/api'
+import api, { BASE_URL } from '../lib/api'
+
+const TIPE_GOLONGAN_LABEL: Record<string, string> = {
+  SIMPINGAN_KIRI: 'Simpingan Kiri',
+  SIMPINGAN_KANAN: 'Simpingan Kanan',
+  DUDHAHAN: 'Dudhahan',
+}
+
+interface MediaWayang {
+  id: number
+  jenis: 'IMAGE' | 'VIDEO'
+  fileUrl: string
+}
+
+interface WayangApi {
+  id: number
+  nama: string
+  golonganId: number
+  media: MediaWayang[]
+}
+
+interface Golongan {
+  id: number
+  namaGolongan: string
+  tipeGolongan: string
+}
+
+interface KoleksiPreviewItem {
+  id: number
+  nama: string
+  tipeGolongan: string
+  gambar?: string
+}
+
+// Fisher–Yates, biar acaknya merata (bukan .sort(() => Math.random() - 0.5)
+// yang bias)
+const shuffle = <T,>(arr: T[]): T[] => {
+  const result = [...arr]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
 
 export default function Home() {
 
   const [totalWayang, setTotalWayang] = useState<number | null>(null)
+  const [totalKotak, setTotalKotak] = useState<number | null>(null)
+  const [totalJenis, setTotalJenis] = useState<number | null>(null)
+  const [randomKoleksi, setRandomKoleksi] = useState<KoleksiPreviewItem[]>([])
 
   useEffect(() => {
-    api.get('/wayang?limit=1').then(res => setTotalWayang(res.data.data.pagination.total))
-    .catch(() => {})
+    Promise.all([
+      api.get('/wayang?limit=100'),
+      api.get('/penyimpanan'),
+      api.get('/golongan/all')
+    ]).then(([wayangRes, kotakRes, golonganRes]) => {
+      setTotalWayang(wayangRes.data.data.pagination.total)
+      setTotalKotak(kotakRes.data.data.length)
+      setTotalJenis(golonganRes.data.data.length)
+
+      const wayangList: WayangApi[] = wayangRes.data.data.data
+      const golonganList: Golongan[] = golonganRes.data.data
+      const golonganMap = new Map(golonganList.map(g => [g.id, g]))
+
+      const koleksi: KoleksiPreviewItem[] = wayangList.map(w => {
+        const gambarMedia = w.media.find(m => m.jenis === 'IMAGE')
+        return {
+          id: w.id,
+          nama: w.nama,
+          tipeGolongan: golonganMap.get(w.golonganId)?.tipeGolongan ?? '',
+          gambar: gambarMedia ? `${BASE_URL}${gambarMedia.fileUrl}` : undefined,
+        }
+      })
+
+      setRandomKoleksi(shuffle(koleksi).slice(0, 4))
+    }).catch(() => {})
   }, [])
 
   return (
@@ -85,12 +154,11 @@ export default function Home() {
 
       {/* ── COUNTER ── */}
       <section className="px-8 md:px-20 py-20 border-b hairline bg-panel">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 reveal">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-8 reveal">
           {[
             { num: totalWayang !== null ? `${totalWayang}+`: '...' , label: 'Koleksi Wayang' },
-            { num: '9', label: 'Kotak Penyimpanan' },
-            { num: '5', label: 'Jenis Wayang' },
-            { num: '20+', label: 'Kegiatan per Tahun' },
+            { num: totalKotak !== null ? `${totalKotak}`: '...', label: 'Kotak Penyimpanan' },
+            { num: totalJenis !== null ? `${totalJenis}`: '...', label: 'Jenis Wayang' },
           ].map(({ num, label }) => (
             <div key={label} className="text-center border-t hairline pt-8">
               <p className="font-display text-[clamp(40px,6vw,72px)] text-gold number-tabular leading-none">
@@ -118,21 +186,33 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {['ARJUNA', 'BIMA', 'KRESNA', 'SRIKANDI'].map((name, i) => (
+            {randomKoleksi.map((k, i) => (
               <Link
-                key={name}
-                to="/koleksi"
+                key={k.id}
+                to={`/koleksi/${k.id}`}
                 className="group block lift border hairline p-3 reveal"
                 style={{ ['--rd' as string]: `${i * 80}ms` }}
               >
-                <div className="placeholder aspect-[3/4] group-hover:opacity-80 transition-opacity">
-                  {name}
-                </div>
+                {k.gambar ? (
+                  <div className="aspect-[3/4] overflow-hidden">
+                    <img
+                      src={k.gambar}
+                      alt={k.nama}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    />
+                  </div>
+                ) : (
+                  <div className="placeholder aspect-[3/4] group-hover:opacity-80 transition-opacity">
+                    {k.nama.toUpperCase()}
+                  </div>
+                )}
                 <div className="mt-4 px-1">
                   <h4 className="font-display text-xl text-cream group-hover:text-gold transition-colors">
-                    {name.charAt(0) + name.slice(1).toLowerCase()}
+                    {k.nama}
                   </h4>
-                  <p className="text-[10px] uppercase tracking-[0.15em] text-cream/45 mt-1">Wayang Kulit</p>
+                  <p className="text-[10px] uppercase tracking-[0.15em] text-cream/45 mt-1">
+                    {TIPE_GOLONGAN_LABEL[k.tipeGolongan] ?? 'Wayang Kulit'}
+                  </p>
                 </div>
               </Link>
             ))}
