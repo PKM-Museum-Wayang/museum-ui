@@ -4,6 +4,7 @@ import {
   useState,
   type ChangeEvent,
   type FormEvent,
+  type KeyboardEvent,
 } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import api, { BASE_URL } from '../lib/api'
@@ -60,6 +61,12 @@ interface MediaWayang {
   fileUrl: string
 }
 
+interface WayangSearchResult {
+  id: number
+  nama: string
+  noWayang: string
+}
+
 interface WayangDetail {
   id: number
   noWayang: string
@@ -77,6 +84,7 @@ interface WayangDetail {
   }
   penyimpananId: number
   media: MediaWayang[]
+  relasi?: number[] | null
 }
 
 interface FormState {
@@ -150,6 +158,11 @@ export default function WayangEdit() {
   const [loadingSubmit, setLoadingSubmit] = useState(false)
 
   const [error, setError] = useState('')
+
+  const [relasiQuery, setRelasiQuery] = useState('')
+  const [relasiResult, setRelasiResult] = useState<WayangSearchResult[]>([])
+  const [relasiSelected, setRelasiSelected] = useState<WayangSearchResult[]>([])
+  const [relasiSearching, setRelasiSearching] = useState(false)
 
 
   useEffect(() => {
@@ -237,6 +250,36 @@ export default function WayangEdit() {
             ? wayangData.media
             : [],
         )
+
+        if (
+          Array.isArray(wayangData.relasi) &&
+          wayangData.relasi.length > 0
+        ) {
+          const relasiResponses = await Promise.all(
+            wayangData.relasi.map((relId) =>
+              api
+                .get(`/wayang/${relId}`)
+                .catch(() => null),
+            ),
+          )
+
+          const hydrated: WayangSearchResult[] =
+            relasiResponses
+              .filter(
+                (res): res is NonNullable<typeof res> =>
+                  res !== null,
+              )
+              .map((res) => {
+                const w = res.data?.data
+                return {
+                  id: w.id,
+                  nama: w.nama,
+                  noWayang: w.noWayang,
+                }
+              })
+
+          setRelasiSelected(hydrated)
+        }
       } catch (err: unknown) {
         console.error(
           'Fetch wayang edit error:',
@@ -306,6 +349,73 @@ export default function WayangEdit() {
       golongan.tipeGolongan ===
       formData.tipeGolongan,
   )
+
+  const handleRelasiSearch = async () => {
+    const query = relasiQuery.trim()
+
+    if (!query) {
+      setRelasiResult([])
+      return
+    }
+
+    try {
+      setRelasiSearching(true)
+
+      const response = await api.get('/wayang', {
+        params: {
+          search: query,
+          limit: 8,
+        },
+      })
+
+      const list = response.data?.data?.data
+
+      if (!Array.isArray(list)) {
+        setRelasiResult([])
+        return
+      }
+
+      const filteredList = list.filter(
+        (wayang: WayangSearchResult) =>
+          wayang.id !== Number(id) &&
+          !relasiSelected.some(
+            (selected) => selected.id === wayang.id,
+          ),
+      )
+
+      setRelasiResult(filteredList)
+    } catch (err: unknown) {
+      console.error('Search relasi wayang error:', err)
+
+      setRelasiResult([])
+    } finally {
+      setRelasiSearching(false)
+    }
+  }
+
+  const handleRelasiKeyDown = (
+    e: KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+
+      void handleRelasiSearch()
+    }
+  }
+
+  const addRelasi = (wayang: WayangSearchResult) => {
+    setRelasiSelected((prev) => [...prev, wayang])
+
+    setRelasiResult((prev) =>
+      prev.filter((item) => item.id !== wayang.id),
+    )
+  }
+
+  const removeRelasi = (relId: number) => {
+    setRelasiSelected((prev) =>
+      prev.filter((item) => item.id !== relId),
+    )
+  }
 
 
 
@@ -442,7 +552,16 @@ export default function WayangEdit() {
         payload,
       )
 
- 
+      await api.post(
+        `/wayang/${id}/relasi`,
+        {
+          relasi: relasiSelected.map(
+            (r) => r.id,
+          ),
+        },
+      )
+
+
       const selectedFile =
         fileRef.current?.files?.[0]
 
@@ -1109,6 +1228,173 @@ export default function WayangEdit() {
           </div>
         </div>
 
+
+
+        <div className="px-5 sm:px-8 py-5 sm:py-6 border-t border-b border-slate-100">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-purple-600"
+              >
+                <circle cx="18" cy="5" r="3" />
+                <circle cx="6" cy="12" r="3" />
+                <circle cx="18" cy="19" r="3" />
+                <line x1="8.6" y1="13.5" x2="15.4" y2="17.5" />
+                <line x1="15.4" y1="6.5" x2="8.6" y2="10.5" />
+              </svg>
+            </div>
+
+            <div>
+              <h2 className="text-sm sm:text-base font-bold text-slate-800">
+                Relasi Wayang
+              </h2>
+
+              <p className="text-[11px] sm:text-xs text-slate-400 mt-1">
+                Hubungkan wayang ini dengan tokoh wayang lainnya.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-5 sm:px-8 py-6 sm:py-8">
+
+          {/* SELECTED RELATION */}
+
+          {relasiSelected.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs sm:text-sm font-bold text-slate-700 mb-2">
+                Wayang yang dipilih
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                {relasiSelected.map((relasi) => (
+                  <span
+                    key={relasi.id}
+                    className="inline-flex items-center gap-2 pl-3 pr-2 py-1.5 bg-blue-50 border border-blue-100 text-blue-700 text-[11px] sm:text-xs font-semibold rounded-full"
+                  >
+                    <span>{relasi.nama}</span>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        removeRelasi(relasi.id)
+                      }
+                      className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-blue-200 cursor-pointer border-none bg-transparent text-blue-700 transition-colors"
+                      aria-label={`Hapus relasi ${relasi.nama}`}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* SEARCH */}
+
+          <label
+            htmlFor="relasiSearch"
+            className="block text-xs sm:text-sm font-bold text-slate-700 mb-2"
+          >
+            Cari Wayang
+          </label>
+
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                <path d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+              </svg>
+            </div>
+
+            <input
+              id="relasiSearch"
+              type="search"
+              value={relasiQuery}
+              onChange={(e) =>
+                setRelasiQuery(e.target.value)
+              }
+              onKeyDown={handleRelasiKeyDown}
+              placeholder="Cari nama wayang yang berelasi..."
+              className="w-full pl-11 pr-28 py-3 sm:py-3.5 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+            />
+
+            <button
+              type="button"
+              onClick={() => void handleRelasiSearch()}
+              disabled={relasiSearching}
+              className="absolute right-1.5 top-1.5 bottom-1.5 px-3 sm:px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white text-[11px] sm:text-xs font-bold rounded-lg cursor-pointer disabled:cursor-not-allowed border-none transition-colors"
+            >
+              {relasiSearching ? 'Mencari...' : 'Cari'}
+            </button>
+          </div>
+
+          {/* SEARCH RESULT */}
+
+          {relasiResult.length > 0 && (
+            <div className="mt-3 border border-slate-200 rounded-xl divide-y divide-slate-100 overflow-hidden">
+              {relasiResult.map((wayang) => (
+                <button
+                  type="button"
+                  key={wayang.id}
+                  onClick={() => addRelasi(wayang)}
+                  className="w-full flex items-center justify-between gap-4 px-4 py-3 text-left bg-white hover:bg-slate-50 cursor-pointer border-none transition-colors"
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm font-semibold text-slate-800 truncate">
+                      {wayang.nama}
+                    </p>
+
+                    <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">
+                      {wayang.noWayang}
+                    </p>
+                  </div>
+
+                  <div className="flex-shrink-0">
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-blue-50 text-blue-600">
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {relasiQuery.trim() &&
+            !relasiSearching &&
+            relasiResult.length === 0 && (
+              <p className="text-xs text-slate-400 mt-3">
+                Tidak ada wayang yang ditemukan.
+              </p>
+            )}
+
+        </div>
 
 
         <div className="px-5 sm:px-8 py-5 sm:py-6 border-t border-b border-slate-100">
