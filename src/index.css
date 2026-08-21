@@ -14,16 +14,14 @@
   --font-mono: "Poppins", sans-serif;
 }
 
-/* ─── Light mode ───
-   Override token @theme; semua utility Tailwind (text-cream, bg-ink, dst.)
-   memakai var() sehingga ikut berubah otomatis. */
 :root[data-theme="light"] {
   --color-ink: #F6F1E7;
   --color-panel: #ECE4D3;
   --color-panel2: #E2D8C3;
-  --color-gold: #8A6A2F;
+  --color-gold: #2e230d;
   --color-goldsoft: #6F541F;
   --color-cream: #241C10;
+  --color-black: #130f08;
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -37,19 +35,17 @@ body {
 }
 #root { min-height: 100vh; }
 
-/* ─── Utilities ─── */
 .hairline { border-color: color-mix(in srgb, var(--color-gold) 18%, transparent); }
 
 .eyebrow {
   display: block;
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-cream) 45%, transparent);
+  color: color-mix(in srgb, var(--color-gold) 80%, transparent);
   font-family: 'Poppins', sans-serif;
 }
 
-/* Scroll-reveal */
 .reveal {
   opacity: 0;
   transform: translateY(22px);
@@ -58,7 +54,6 @@ body {
 }
 .reveal.in { opacity: 1; transform: none; }
 
-/* Chips */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -78,13 +73,12 @@ body {
 .chip.is-active { color: var(--color-gold); border-color: var(--color-gold); background: color-mix(in srgb, var(--color-gold) 6%, transparent); }
 .chip .count { font-size: 9px; opacity: .65; }
 
-/* Buttons */
 .btn-primary {
   display: inline-block;
   padding: 13px 28px;
   background: var(--color-gold);
   color: var(--color-ink);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   text-decoration: none;
@@ -98,9 +92,9 @@ body {
 .btn-ghost {
   display: inline-block;
   padding: 12px 26px;
-  border: 1px solid color-mix(in srgb, var(--color-gold) 32%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold) 50%, transparent);
   color: var(--color-gold);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   text-decoration: none;
@@ -111,12 +105,10 @@ body {
 }
 .btn-ghost:hover { border-color: color-mix(in srgb, var(--color-gold) 70%, transparent); background: color-mix(in srgb, var(--color-gold) 5%, transparent); }
 
-/* Lift on hover */
 .lift { transition: transform .25s ease, box-shadow .25s ease; }
 .lift:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(0,0,0,0.45); }
 :root[data-theme="light"] .lift:hover { box-shadow: 0 10px 32px rgba(0,0,0,0.15); }
 
-/* Placeholder */
 .placeholder {
   background: var(--color-panel);
   display: flex;
@@ -132,7 +124,6 @@ body {
   width: 100%;
 }
 
-/* Arrow link */
 .arrow-link {
   display: inline-flex;
   align-items: center;
@@ -157,10 +148,8 @@ body {
 }
 .arrow-link:hover .line { width: 32px; }
 
-/* Number tabular */
 .number-tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 
-/* Page hero */
 .page-hero {
   position: relative;
   padding-top: 10rem;
@@ -168,7 +157,6 @@ body {
   border-bottom: 1px solid color-mix(in srgb, var(--color-gold) 18%, transparent);
 }
 
-/* Hero overlay (Home) — gradasi mengikuti warna latar tema */
 .hero-overlay {
   background: linear-gradient(to bottom,
     color-mix(in srgb, var(--color-ink) 30%, transparent) 0%,
@@ -176,7 +164,6 @@ body {
     color-mix(in srgb, var(--color-ink) 92%, transparent) 100%);
 }
 
-/* Form */
 .form-label {
   display: block;
   font-size: 11px;
@@ -186,6 +173,7 @@ body {
   margin-bottom: 8px;
   font-family: 'Poppins', sans-serif;
 }
+
 .input {
   display: block;
   width: 100%;
@@ -199,43 +187,43 @@ body {
   font-family: 'Poppins', sans-serif;
   transition: border-color .18s;
 }
+
 .input:focus { border-bottom-color: var(--color-gold); }
 .input::placeholder { color: color-mix(in srgb, var(--color-cream) 28%, transparent); }
 textarea.input { resize: none; border: 1px solid color-mix(in srgb, var(--color-gold) 22%, transparent); padding: 10px 12px; }
 textarea.input:focus { border-color: var(--color-gold); }
 
-/* ─── Navigation ─── */
 .museum-nav {
-  padding: 0.8rem 3rem;
-  transition: background-color 0.4s ease, padding 0.4s ease,
-              backdrop-filter 0.4s ease, box-shadow 0.4s ease;
-}
-.museum-nav.scrolled {
+  padding: 0.2rem 2rem;
   background-color: color-mix(in srgb, var(--color-ink) 92%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 2px 20px rgba(0,0,0,0.5);
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
+  transition: background-color 0.4s ease, padding 0.4s ease,
+              backdrop-filter 0.4s ease, box-shadow 0.4s ease;
 }
+
+.museum-nav.scrolled {
+  box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+}
+
 :root[data-theme="light"] .museum-nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.12); }
-/* .museum-nav-logo {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--color-cream);
-  text-decoration: none;
-  letter-spacing: 0.02em;
-} */
+.museum-nav-logo {
+  display: flex;
+  align-items: center;
+}
+
 .museum-nav-link {
   font-family: 'Poppins', sans-serif;
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: color-mix(in srgb, var(--color-cream) 75%, transparent);
   text-decoration: none;
   position: relative;
   padding-bottom: 4px;
   transition: color 0.3s ease;
 }
+
 .museum-nav-link::after {
   content: '';
   position: absolute;
@@ -266,9 +254,11 @@ textarea.input:focus { border-color: var(--color-gold); }
 .theme-toggle:hover { color: var(--color-gold); border-color: color-mix(in srgb, var(--color-gold) 60%, transparent); }
 
 /* Hamburger */
-.museum-hamburger {
-  display: flex; flex-direction: column; gap: 5px;
-  background: none; border: none; cursor: pointer; padding: 4px;
+@layer components {
+  .museum-hamburger {
+    display: flex; flex-direction: column; gap: 5px;
+    background: none; border: none; cursor: pointer; padding: 4px;
+  }
 }
 .museum-hamburger span {
   display: block; width: 26px; height: 2px;
@@ -281,18 +271,20 @@ textarea.input:focus { border-color: var(--color-gold); }
 .museum-hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 /* Mobile panel */
-.museum-mobile-nav {
-  position: fixed; top: 0; right: -100%;
-  width: 280px; height: 100vh;
-  background: color-mix(in srgb, var(--color-ink) 97%, transparent);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  display: flex; flex-direction: column;
-  justify-content: center; align-items: center;
-  z-index: 49;
-  transition: right 0.4s ease;
+@layer components {
+  .museum-mobile-nav {
+    position: fixed; top: 0; right: -100%;
+    width: 280px; height: 100vh;
+    background: color-mix(in srgb, var(--color-ink) 97%, transparent);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    z-index: 49;
+    transition: right 0.4s ease;
+  }
 }
 .museum-mobile-nav.open { right: 0; }
-.museum-mobile-nav .museum-nav-link { font-size: 1.05rem; }
+.museum-mobile-nav.museum-nav-link { font-size: 1.05rem; }
 
 @media (max-width: 767px) {
   .museum-nav { padding-left: 1.5rem; padding-right: 1.5rem; }
@@ -302,6 +294,20 @@ textarea.input:focus { border-color: var(--color-gold); }
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(28px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Login slideshow — pergeseran lambat per gambar (Ken Burns) ─── */
+@keyframes kenburns-ltr {
+  from { transform: scale(1.35) translateX(-6%); }
+  to   { transform: scale(1.35) translateX(6%); }
+}
+@keyframes kenburns-rtl {
+  from { transform: scale(1.35) translateX(6%); }
+  to   { transform: scale(1.35) translateX(-6%); }
+}
+@keyframes kenburns-zoom {
+  from { transform: scale(1.15); }
+  to   { transform: scale(1.45); }
 }
 
 /* Scroll indicator mouse box */

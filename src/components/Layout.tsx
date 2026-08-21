@@ -18,9 +18,20 @@ export default function Layout() {
       },
       { threshold: 0.12 }
     )
-    const targets = document.querySelectorAll('.reveal')
-    targets.forEach(el => observer.observe(el))
-    return () => observer.disconnect()
+    const observeAll = () => {
+      document.querySelectorAll('.reveal:not(.in)').forEach(el => observer.observe(el))
+    }
+    observeAll()
+
+    // Elemen `.reveal` yang muncul belakangan (mis. setelah fetch API selesai)
+    // tidak ter-observe oleh querySelectorAll di atas — MutationObserver menangkap itu.
+    const mutationObserver = new MutationObserver(observeAll)
+    mutationObserver.observe(document.body, { childList: true, subtree: true })
+
+    return () => {
+      observer.disconnect()
+      mutationObserver.disconnect()
+    }
   }, [pathname])
 
   /* Scroll to top on route change */

@@ -1,42 +1,33 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import api, { BASE_URL } from '../lib/api'
+import api from '../lib/api'
 
-type TipeGolongan =
-  | 'SIMPINGAN_KIRI'
-  | 'SIMPINGAN_KANAN'
-  | 'DUDHAHAN'
-
-interface MediaWayang {
+interface Peminjam {
   id: number
-  namaFile: string
-  jenis: 'IMAGE' | 'VIDEO'
-  fileUrl: string
-  keterangan?: string
+  namaPeminjam: string
+  alamat: string
+  noHp: string
 }
 
-interface Wayang {
+interface WayangPeminjaman {
   id: number
-  noWayang: string
   nama: string
-  gaya?: string
-  daerah?: string
-  kondisi?: string
-  golonganId: number
-  penyimpananId: number
-  media: MediaWayang[]
 }
 
-interface Golongan {
+interface Peminjaman {
   id: number
-  namaGolongan: string
-  tipeGolongan: TipeGolongan
+  peminjam: Peminjam
+  wayang: WayangPeminjaman
+  tanggalPinjam: string
+  tanggalKembali: string
+  keterangan?: string
+  status: 'DIPINJAM' | 'DIKEMBALIKAN'
 }
 
-interface Penyimpanan {
-  id: number
-  namaKotak: string
-}
+type StatusPeminjaman =
+  | 'DIPINJAM'
+  | 'TERLAMBAT'
+  | 'DIKEMBALIKAN'
 
 interface Pagination {
   page: number
@@ -45,99 +36,51 @@ interface Pagination {
   totalPages: number
 }
 
-interface WayangResponse {
-  data: Wayang[]
-  pagination: Pagination
-  statistics?: {
-    totalWayang: number
-  }
+interface Statistics {
+  totalPeminjaman: number
+  totalPeminjam: number
+  totalDipinjam: number
+  totalDikembalikan: number
 }
 
-export default function AdminDashboard() {
-  const [wayangList, setWayangList] = useState<Wayang[]>([])
+interface PeminjamanResponse {
+  data: Peminjaman[]
+  pagination: Pagination
+  statistics: Statistics
+}
 
-  const [pagination, setPagination] = useState<Pagination>({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0,
-  })
+export default function AdminPeminjaman() {
+  const [peminjamanList, setPeminjamanList] =
+    useState<Peminjaman[]>([])
 
-  const [golonganList, setGolonganList] = useState<Golongan[]>([])
-  const [penyimpananList, setPenyimpananList] = useState<Penyimpanan[]>([])
+  const [pagination, setPagination] =
+    useState<Pagination>({
+      page: 1,
+      limit: 10,
+      total: 0,
+      totalPages: 0,
+    })
+
+  const [statistics, setStatistics] =
+    useState<Statistics>({
+      totalPeminjaman: 0,
+      totalPeminjam: 0,
+      totalDipinjam: 0,
+      totalDikembalikan: 0,
+    })
 
   const [search, setSearch] = useState('')
-
-  const [tipeGolonganFilter, setTipeGolonganFilter] =
-    useState<TipeGolongan | ''>('')
-
-  const [golonganFilter, setGolonganFilter] = useState('')
-  const [penyimpananFilter, setPenyimpananFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
-  const normalizeTipeGolongan = (value: unknown): string => {
-    return String(value ?? '')
-      .trim()
-      .toUpperCase()
-      .replace(/\s+/g, '_')
-  }
 
-
-  const filteredGolongan = tipeGolonganFilter
-    ? golonganList.filter((golongan) => {
-        const tipe = normalizeTipeGolongan(
-          golongan.tipeGolongan,
-        )
-
-        return tipe === tipeGolonganFilter
-      })
-    : []
-
-  const fetchGolongan = async () => {
-  try {
-    const res = await api.get('/golongan/all')
-
-    console.log('=== RESPONSE GOLONGAN ===')
-    console.log(res.data)
-
-    const data: Golongan[] = res.data.data ?? []
-
-    console.log('=== DATA GOLONGAN ===')
-    console.table(data)
-
-    setGolonganList(data)
-  } catch (err) {
-    console.error(err)
-    setError('Gagal memuat data golongan.')
-  }
-}
-
-  const fetchPenyimpanan = async () => {
-    try {
-      const res = await api.get('/penyimpanan')
-
-      const data: Penyimpanan[] =
-        res.data.data?.data ??
-        res.data.data ??
-        []
-
-      console.log('=== DATA PENYIMPANAN ===')
-      console.log(data)
-
-      setPenyimpananList(data)
-    } catch (err) {
-      console.error(err)
-
-      setError('Gagal memuat data penyimpanan.')
-    }
-  }
-
-  useEffect(() => {
-    fetchGolongan()
-    fetchPenyimpanan()
-  }, [])
+  /*
+   * ==========================================
+   * FETCH PEMINJAMAN
+   * ==========================================
+   */
 
   useEffect(() => {
     let cancelled = false
@@ -153,39 +96,21 @@ export default function AdminDashboard() {
           page: number
           limit: number
           search?: string
-          tipeGolongan?: TipeGolongan
-          golonganId?: number
-          penyimpananId?: number
+          status?: string
         } = {
           page: pagination.page,
           limit: pagination.limit,
         }
 
-
         if (search.trim()) {
           params.search = search.trim()
         }
 
-
-        if (tipeGolonganFilter) {
-          params.tipeGolongan = tipeGolonganFilter
+        if (statusFilter) {
+          params.status = statusFilter
         }
 
-        if (golonganFilter) {
-          params.golonganId = Number(golonganFilter)
-        }
-
-    
-
-        if (penyimpananFilter) {
-          params.penyimpananId =
-            Number(penyimpananFilter)
-        }
-
-        console.log('=== PARAMS WAYANG ===')
-        console.log(params)
-
-        const res = await api.get('/wayang', {
+        const res = await api.get('/peminjaman', {
           params,
         })
 
@@ -193,11 +118,12 @@ export default function AdminDashboard() {
           return
         }
 
-        const result: WayangResponse =
+        const result: PeminjamanResponse =
           res.data.data
 
-        setWayangList(result.data)
+        setPeminjamanList(result.data)
         setPagination(result.pagination)
+        setStatistics(result.statistics)
       } catch (err) {
         if (cancelled) {
           return
@@ -206,10 +132,10 @@ export default function AdminDashboard() {
         console.error(err)
 
         setError(
-          'Gagal memuat data wayang. Pastikan backend sudah berjalan.',
+          'Gagal memuat data peminjaman. Pastikan backend sudah berjalan.',
         )
 
-        setWayangList([])
+        setPeminjamanList([])
       } finally {
         if (!cancelled) {
           setLoading(false)
@@ -225,10 +151,14 @@ export default function AdminDashboard() {
     pagination.page,
     pagination.limit,
     search,
-    tipeGolonganFilter,
-    golonganFilter,
-    penyimpananFilter,
+    statusFilter,
   ])
+
+  /*
+   * ==========================================
+   * SEARCH
+   * ==========================================
+   */
 
   const handleSearch = (value: string) => {
     setSearch(value)
@@ -239,25 +169,14 @@ export default function AdminDashboard() {
     }))
   }
 
+  /*
+   * ==========================================
+   * STATUS FILTER
+   * ==========================================
+   */
 
-  const handleTipeGolonganFilter = (
-    value: TipeGolongan | '',
-  ) => {
-    setTipeGolonganFilter(value)
-
-    setGolonganFilter('')
-
-
-    setPagination((prev) => ({
-      ...prev,
-      page: 1,
-    }))
-  }
- 
-  const handleGolonganFilter = (
-    value: string,
-  ) => {
-    setGolonganFilter(value)
+  const handleStatusFilter = (value: string) => {
+    setStatusFilter(value)
 
     setPagination((prev) => ({
       ...prev,
@@ -265,22 +184,82 @@ export default function AdminDashboard() {
     }))
   }
 
+  /*
+   * ==========================================
+   * STATUS
+   * ==========================================
+   */
 
-  const handlePenyimpananFilter = (
-    value: string,
-  ) => {
-    setPenyimpananFilter(value)
+  const getStatus = (
+    peminjaman: Peminjaman,
+  ): StatusPeminjaman => {
+    if (peminjaman.status === 'DIKEMBALIKAN') {
+      return 'DIKEMBALIKAN'
+    }
 
-    setPagination((prev) => ({
-      ...prev,
-      page: 1,
-    }))
+    const today = new Date()
+
+    const tanggalKembali = new Date(
+      peminjaman.tanggalKembali,
+    )
+
+    if (today > tanggalKembali) {
+      return 'TERLAMBAT'
+    }
+
+    return 'DIPINJAM'
   }
 
+  /*
+   * ==========================================
+   * FORMAT TANGGAL
+   * ==========================================
+   */
+
+  const formatTanggal = (tanggal: string) => {
+    return new Date(tanggal).toLocaleDateString(
+      'id-ID',
+      {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      },
+    )
+  }
+
+  /*
+   * ==========================================
+   * STATUS STYLE
+   * ==========================================
+   */
+
+  const getStatusStyle = (
+    status: StatusPeminjaman,
+  ) => {
+    switch (status) {
+      case 'DIPINJAM':
+        return 'bg-blue-100 text-blue-700'
+
+      case 'TERLAMBAT':
+        return 'bg-red-100 text-red-700'
+
+      case 'DIKEMBALIKAN':
+        return 'bg-green-100 text-green-700'
+
+      default:
+        return 'bg-slate-100 text-slate-600'
+    }
+  }
+
+  /*
+   * ==========================================
+   * DELETE
+   * ==========================================
+   */
 
   const handleDelete = async (id: number) => {
     const confirmed = window.confirm(
-      'Yakin ingin menghapus wayang ini?',
+      'Yakin ingin menghapus data peminjaman ini?',
     )
 
     if (!confirmed) {
@@ -290,73 +269,63 @@ export default function AdminDashboard() {
     try {
       setError('')
 
-      await api.delete(`/wayang/${id}`)
+      await api.delete(`/peminjaman/${id}`)
 
-      setSuccessMsg('Wayang berhasil dihapus.')
+      setSuccessMsg(
+        'Data peminjaman berhasil dihapus.',
+      )
 
       setTimeout(() => {
         setSuccessMsg('')
       }, 3000)
 
-  
       if (
-        wayangList.length === 1 &&
+        peminjamanList.length === 1 &&
         pagination.page > 1
       ) {
         setPagination((prev) => ({
           ...prev,
           page: prev.page - 1,
         }))
+      } else {
+        /*
+         * Fetch ulang
+         */
+        const params: {
+          page: number
+          limit: number
+          search?: string
+          status?: string
+        } = {
+          page: pagination.page,
+          limit: pagination.limit,
+        }
 
-        return
+        if (search.trim()) {
+          params.search = search.trim()
+        }
+
+        if (statusFilter) {
+          params.status = statusFilter
+        }
+
+        const res = await api.get('/peminjaman', {
+          params,
+        })
+
+        const result: PeminjamanResponse =
+          res.data.data
+
+        setPeminjamanList(result.data)
+        setPagination(result.pagination)
+        setStatistics(result.statistics)
       }
-
-    
-
-      const params: {
-        page: number
-        limit: number
-        search?: string
-        tipeGolongan?: TipeGolongan
-        golonganId?: number
-        penyimpananId?: number
-      } = {
-        page: pagination.page,
-        limit: pagination.limit,
-      }
-
-      if (search.trim()) {
-        params.search = search.trim()
-      }
-
-      if (tipeGolonganFilter) {
-        params.tipeGolongan =
-          tipeGolonganFilter
-      }
-
-      if (golonganFilter) {
-        params.golonganId =
-          Number(golonganFilter)
-      }
-
-      if (penyimpananFilter) {
-        params.penyimpananId =
-          Number(penyimpananFilter)
-      }
-
-      const res = await api.get('/wayang', {
-        params,
-      })
-
-      const result: WayangResponse =
-        res.data.data
-
-      setWayangList(result.data)
-      setPagination(result.pagination)
     } catch (err) {
       console.error(err)
 
-      setError('Gagal menghapus wayang.')
+      setError(
+        'Gagal menghapus data peminjaman.',
+      )
 
       setTimeout(() => {
         setError('')
@@ -364,38 +333,11 @@ export default function AdminDashboard() {
     }
   }
 
-
-  const getThumb = (
-    media: MediaWayang[],
-  ) => {
-    const img = media?.find(
-      (m) => m.jenis === 'IMAGE',
-    )
-
-    return img
-      ? `${BASE_URL}${img.fileUrl}`
-      : null
-  }
-
-
-  const getTipeGolonganLabel = (
-    tipe: TipeGolongan,
-  ) => {
-    switch (tipe) {
-      case 'SIMPINGAN_KIRI':
-        return 'Simpingan Kiri'
-
-      case 'SIMPINGAN_KANAN':
-        return 'Simpingan Kanan'
-
-      case 'DUDHAHAN':
-        return 'Dudhahan'
-
-      default:
-        return tipe
-    }
-  }
-
+  /*
+   * ==========================================
+   * PAGINATION
+   * ==========================================
+   */
 
   const handlePreviousPage = () => {
     if (pagination.page <= 1) {
@@ -422,14 +364,22 @@ export default function AdminDashboard() {
     }))
   }
 
-
+  /*
+   * ==========================================
+   * RENDER
+   * ==========================================
+   */
 
   return (
     <div className="text-sm">
 
+      {/* ==========================================
+          ERROR
+          ========================================== */}
 
       {error && (
         <div className="flex items-center gap-2 px-4 py-3 mb-4 rounded-lg text-[0.8rem] bg-red-50 text-red-800 border border-red-200">
+
           <svg
             width="16"
             height="16"
@@ -465,10 +415,13 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* SUCCESS */}
+      {/* ==========================================
+          SUCCESS
+          ========================================== */}
 
       {successMsg && (
         <div className="flex items-center gap-2 px-4 py-3 mb-4 rounded-lg text-[0.8rem] bg-green-50 text-green-800 border border-green-200">
+
           <svg
             width="16"
             height="16"
@@ -486,60 +439,229 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* HEADER */}
+      {/* ==========================================
+          HEADER
+          ========================================== */}
 
       <div className="mb-5">
+
         <h1 className="text-xl font-bold text-slate-900">
-          Kelola Wayang
+          Kelola Peminjaman
         </h1>
 
         <p className="text-xs text-slate-400 mt-1">
-          Kelola data koleksi wayang
+          Kelola data peminjaman koleksi wayang
         </p>
+
       </div>
 
-      {/* STATISTIC */}
+      {/* ==========================================
+          STATISTICS
+          ========================================== */}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+
+        {/* TOTAL PEMINJAMAN */}
+
         <div className="bg-white rounded-lg shadow-sm border border-slate-100 px-4 py-3.5">
+
           <div className="flex items-center justify-between">
+
             <div>
+
               <p className="text-xs text-slate-400">
-                Total Wayang
+                Total Peminjaman
               </p>
 
               <h2 className="text-xl font-bold text-slate-900 mt-0.5">
-                {pagination.total}
+                {statistics.totalPeminjaman}
               </h2>
+
             </div>
 
             <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
-             <svg
-  width="19"
-  height="19"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  strokeWidth="2"
-  strokeLinecap="round"
-  strokeLinejoin="round"
->
-  <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8Z" />
-  <path d="m3.3 7 8.7 5 8.7-5" />
-  <path d="M12 22V12" />
-</svg>
+
+              <svg
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+
+                <polyline points="14 2 14 8 20 8" />
+
+                <line
+                  x1="16"
+                  y1="13"
+                  x2="8"
+                  y2="13"
+                />
+
+                <line
+                  x1="16"
+                  y1="17"
+                  x2="8"
+                  y2="17"
+                />
+
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+
             </div>
+
           </div>
+
         </div>
+
+        {/* TOTAL PEMINJAM */}
+
+        <div className="bg-white rounded-lg shadow-sm border border-slate-100 px-4 py-3.5">
+
+          <div className="flex items-center justify-between">
+
+            <div>
+
+              <p className="text-xs text-slate-400">
+                Total Peminjam
+              </p>
+
+              <h2 className="text-xl font-bold text-slate-900 mt-0.5">
+                {statistics.totalPeminjam}
+              </h2>
+
+            </div>
+
+            <div className="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
+
+              <svg
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20 21a8 8 0 0 0-16 0" />
+
+                <circle
+                  cx="12"
+                  cy="7"
+                  r="4"
+                />
+              </svg>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* SEDANG DIPINJAM */}
+
+        <div className="bg-white rounded-lg shadow-sm border border-slate-100 px-4 py-3.5">
+
+          <div className="flex items-center justify-between">
+
+            <div>
+
+              <p className="text-xs text-slate-400">
+                Sedang Dipinjam
+              </p>
+
+              <h2 className="text-xl font-bold text-slate-900 mt-0.5">
+                {statistics.totalDipinjam}
+              </h2>
+
+            </div>
+
+            <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">
+
+              <svg
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+
+                <line
+                  x1="12"
+                  y1="22.08"
+                  x2="12"
+                  y2="12"
+                />
+              </svg>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* DIKEMBALIKAN */}
+
+        <div className="bg-white rounded-lg shadow-sm border border-slate-100 px-4 py-3.5">
+
+          <div className="flex items-center justify-between">
+
+            <div>
+
+              <p className="text-xs text-slate-400">
+                Dikembalikan
+              </p>
+
+              <h2 className="text-xl font-bold text-slate-900 mt-0.5">
+                {statistics.totalDikembalikan}
+              </h2>
+
+            </div>
+
+            <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center text-green-600">
+
+              <svg
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
 
-      {/* FILTER */}
+      {/* ==========================================
+          SEARCH + FILTER + TAMBAH
+          ========================================== */}
 
       <div className="flex flex-col xl:flex-row items-stretch gap-2.5 mb-4">
 
         {/* SEARCH */}
 
         <div className="relative flex-1 min-w-0">
+
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             width="16"
@@ -567,112 +689,51 @@ export default function AdminDashboard() {
 
           <input
             type="text"
-            placeholder="Cari nama wayang..."
+            placeholder="Cari nama peminjam atau nomor HP..."
             value={search}
             onChange={(e) =>
               handleSearch(e.target.value)
             }
             className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-xs outline-none bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
           />
+
         </div>
 
-        {/* TIPE GOLONGAN */}
+        {/* STATUS */}
 
         <select
-          value={tipeGolonganFilter}
+          value={statusFilter}
           onChange={(e) =>
-            handleTipeGolonganFilter(
-              e.target.value as
-                | TipeGolongan
-                | '',
-            )
+            handleStatusFilter(e.target.value)
           }
           className="w-full xl:w-48 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-600 bg-white outline-none cursor-pointer focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
         >
+
           <option value="">
-            Semua Tipe Golongan
+            Semua Status
           </option>
 
-          <option value="SIMPINGAN_KIRI">
-            Simpingan Kiri
+          <option value="DIPINJAM">
+            Dipinjam
           </option>
 
-          <option value="SIMPINGAN_KANAN">
-            Simpingan Kanan
+          <option value="TERLAMBAT">
+            Terlambat
           </option>
 
-          <option value="DUDHAHAN">
-            Dudhahan
-          </option>
-        </select>
-
-        {/* NAMA GOLONGAN */}
-
-        <select
-          value={golonganFilter}
-          disabled={!tipeGolonganFilter}
-          onChange={(e) =>
-            handleGolonganFilter(
-              e.target.value,
-            )
-          }
-          className={`w-full xl:w-48 px-3 py-2 border rounded-lg text-xs outline-none transition ${
-            !tipeGolonganFilter
-              ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-              : 'bg-white text-slate-600 border-slate-200 cursor-pointer focus:border-blue-400 focus:ring-2 focus:ring-blue-100'
-          }`}
-        >
-          <option value="">
-            {tipeGolonganFilter
-              ? 'Semua Nama Golongan'
-              : 'Pilih tipe golongan dulu'}
+          <option value="DIKEMBALIKAN">
+            Dikembalikan
           </option>
 
-          {filteredGolongan.map(
-            (golongan) => (
-              <option
-                key={golongan.id}
-                value={golongan.id}
-              >
-                {golongan.namaGolongan}
-              </option>
-            ),
-          )}
-        </select>
-
-        {/* PENYIMPANAN */}
-
-        <select
-          value={penyimpananFilter}
-          onChange={(e) =>
-            handlePenyimpananFilter(
-              e.target.value,
-            )
-          }
-          className="w-full xl:w-48 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-600 bg-white outline-none cursor-pointer focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-        >
-          <option value="">
-            Semua Penyimpanan
-          </option>
-
-          {penyimpananList.map(
-            (penyimpanan) => (
-              <option
-                key={penyimpanan.id}
-                value={penyimpanan.id}
-              >
-                {penyimpanan.namaKotak}
-              </option>
-            ),
-          )}
         </select>
 
         {/* TAMBAH */}
 
         <Link
-          to="/admin/wayang/create"
+          to="/admin/peminjaman/create"
           className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-lg no-underline transition-colors whitespace-nowrap"
         >
+
           <svg
             width="14"
             height="14"
@@ -698,50 +759,66 @@ export default function AdminDashboard() {
             />
           </svg>
 
-          Tambah Wayang
+          Tambah Peminjaman
+
         </Link>
+
       </div>
 
-      {/* TABLE */}
+      {/* ==========================================
+          TABLE
+          ========================================== */}
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-slate-100">
 
         {loading ? (
+
           <div className="py-12 text-center text-slate-400 text-xs">
             Memuat data…
           </div>
-        ) : wayangList.length > 0 ? (
+
+        ) : peminjamanList.length > 0 ? (
+
           <>
+
             <div className="overflow-x-auto">
+
               <table className="w-full border-collapse">
+
                 <thead>
+
                   <tr>
+
                     {[
                       'No',
-                      'Gambar',
-                      'No. Wayang',
-                      'Nama',
-                      'Daerah',
-                      'Kondisi',
+                      'Nama Peminjam',
+                      'Wayang',
+                      'Tanggal Pinjam',
+                      'Tanggal Kembali',
+                      'Status',
                       'Aksi',
                     ].map((heading) => (
+
                       <th
                         key={heading}
                         className="bg-slate-50 px-3.5 py-2.5 text-left text-[0.68rem] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200 whitespace-nowrap"
                       >
                         {heading}
                       </th>
+
                     ))}
+
                   </tr>
+
                 </thead>
 
                 <tbody>
-                  {wayangList.map(
-                    (wayang, idx) => {
-                      const thumb =
-                        getThumb(
-                          wayang.media,
-                        )
+
+                  {peminjamanList.map(
+                    (peminjaman, idx) => {
+
+                      const status =
+                        getStatus(peminjaman)
 
                       const nomor =
                         (pagination.page - 1) *
@@ -750,8 +827,9 @@ export default function AdminDashboard() {
                         1
 
                       return (
+
                         <tr
-                          key={wayang.id}
+                          key={peminjaman.id}
                           className="hover:bg-slate-50 transition-colors"
                         >
 
@@ -761,65 +839,83 @@ export default function AdminDashboard() {
                             {nomor}
                           </td>
 
-                          {/* GAMBAR */}
+                          {/* NAMA PEMINJAM */}
 
                           <td className="px-3.5 py-2.5 border-b border-slate-100">
-                            {thumb ? (
-                              <img
-                                src={thumb}
-                                alt={wayang.nama}
-                                className="w-11 h-11 object-cover rounded-md"
-                              />
-                            ) : (
-                              <div className="w-11 h-11 bg-slate-100 rounded-md flex items-center justify-center text-slate-400 text-[0.55rem]">
-                                No img
-                              </div>
+
+                            <div className="text-xs text-slate-800 font-medium">
+                              {
+                                peminjaman
+                                  .peminjam
+                                  .namaPeminjam
+                              }
+                            </div>
+
+                            <div className="text-[0.65rem] text-slate-400 mt-0.5">
+                              {
+                                peminjaman
+                                  .peminjam
+                                  .noHp
+                              }
+                            </div>
+
+                          </td>
+
+                          {/* WAYANG */}
+
+                          <td className="px-3.5 py-2.5 text-xs text-slate-600 border-b border-slate-100">
+                            {
+                              peminjaman
+                                .wayang
+                                .nama
+                            }
+                          </td>
+
+                          {/* TANGGAL PINJAM */}
+
+                          <td className="px-3.5 py-2.5 text-xs text-slate-500 border-b border-slate-100 whitespace-nowrap">
+                            {formatTanggal(
+                              peminjaman
+                                .tanggalPinjam,
                             )}
                           </td>
 
-                          {/* NO WAYANG */}
+                          {/* TANGGAL KEMBALI */}
 
-                          <td className="px-3.5 py-2.5 text-xs text-slate-500 border-b border-slate-100 font-mono whitespace-nowrap">
-                            {wayang.noWayang}
+                          <td className="px-3.5 py-2.5 text-xs text-slate-500 border-b border-slate-100 whitespace-nowrap">
+                            {formatTanggal(
+                              peminjaman
+                                .tanggalKembali,
+                            )}
                           </td>
 
-                          {/* NAMA */}
-
-                          <td className="px-3.5 py-2.5 text-xs text-slate-800 border-b border-slate-100 font-medium">
-                            {wayang.nama}
-                          </td>
-
-                          {/* DAERAH */}
-
-                          <td className="px-3.5 py-2.5 text-xs text-slate-500 border-b border-slate-100">
-                            {wayang.daerah ?? '—'}
-                          </td>
-
-                          {/* KONDISI */}
+                          {/* STATUS */}
 
                           <td className="px-3.5 py-2.5 border-b border-slate-100">
-                            {wayang.kondisi ? (
-                              <span className="bg-green-100 text-green-700 text-[0.65rem] font-medium px-1.5 py-0.5 rounded">
-                                {wayang.kondisi}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400 text-[0.65rem]">
-                                —
-                              </span>
-                            )}
+
+                            <span
+                              className={`text-[0.65rem] font-medium px-1.5 py-0.5 rounded ${getStatusStyle(
+                                status,
+                              )}`}
+                            >
+                              {status}
+                            </span>
+
                           </td>
 
                           {/* AKSI */}
 
                           <td className="px-3.5 py-2.5 border-b border-slate-100">
+
                             <div className="flex gap-1.5">
 
                               {/* EDIT */}
 
                               <Link
-                                to={`/admin/wayang/${wayang.id}/edit`}
+                                to={`/admin/peminjaman/${peminjaman.id}/edit`}
                                 className="inline-flex items-center px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[0.7rem] font-medium rounded-md no-underline transition-colors"
                               >
+
                                 <svg
                                   width="12"
                                   height="12"
@@ -837,6 +933,7 @@ export default function AdminDashboard() {
                                 </svg>
 
                                 Edit
+
                               </Link>
 
                               {/* DELETE */}
@@ -845,11 +942,12 @@ export default function AdminDashboard() {
                                 type="button"
                                 onClick={() =>
                                   handleDelete(
-                                    wayang.id,
+                                    peminjaman.id,
                                   )
                                 }
                                 className="inline-flex items-center px-2.5 py-1.5 bg-red-500 hover:bg-red-600 text-white text-[0.7rem] font-medium rounded-md cursor-pointer border-none transition-colors"
                               >
+
                                 <svg
                                   width="12"
                                   height="12"
@@ -873,38 +971,53 @@ export default function AdminDashboard() {
                                 </svg>
 
                                 Hapus
+
                               </button>
+
                             </div>
+
                           </td>
+
                         </tr>
+
                       )
                     },
                   )}
+
                 </tbody>
+
               </table>
+
             </div>
 
-            {/* PAGINATION */}
+            {/* ==========================================
+                PAGINATION
+                ========================================== */}
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3.5 py-3 border-t border-slate-100">
 
               <div className="text-xs text-slate-400">
+
                 Menampilkan{' '}
 
-                {(pagination.page - 1) *
-                  pagination.limit +
-                  1}{' '}
+                {pagination.total > 0
+                  ? (pagination.page - 1) *
+                      pagination.limit +
+                    1
+                  : 0}
 
-                -{' '}
+                {' - '}
 
                 {Math.min(
                   pagination.page *
                     pagination.limit,
                   pagination.total,
-                )}{' '}
+                )}
 
-                dari {pagination.total}{' '}
-                data
+                {' '}dari{' '}
+
+                {pagination.total} data
+
               </div>
 
               <div className="flex items-center gap-1">
@@ -921,6 +1034,7 @@ export default function AdminDashboard() {
                   }
                   className="w-8 h-8 flex items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 text-xs disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
                 >
+
                   <svg
                     width="14"
                     height="14"
@@ -933,6 +1047,7 @@ export default function AdminDashboard() {
                   >
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
+
                 </button>
 
                 {/* PAGE NUMBER */}
@@ -946,6 +1061,7 @@ export default function AdminDashboard() {
                     index + 1,
                 )
                   .filter((page) => {
+
                     if (
                       pagination.totalPages <=
                       7
@@ -974,6 +1090,7 @@ export default function AdminDashboard() {
                       index,
                       pages,
                     ) => {
+
                       const previousPage =
                         pages[index - 1]
 
@@ -985,10 +1102,12 @@ export default function AdminDashboard() {
                           1
 
                       return (
+
                         <div
                           key={page}
                           className="flex items-center gap-1"
                         >
+
                           {showEllipsis && (
                             <span className="w-8 h-8 flex items-center justify-center text-xs text-slate-400">
                               ...
@@ -1014,7 +1133,9 @@ export default function AdminDashboard() {
                           >
                             {page}
                           </button>
+
                         </div>
+
                       )
                     },
                   )}
@@ -1032,6 +1153,7 @@ export default function AdminDashboard() {
                   }
                   className="w-8 h-8 flex items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 text-xs disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
                 >
+
                   <svg
                     width="14"
                     height="14"
@@ -1044,13 +1166,25 @@ export default function AdminDashboard() {
                   >
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
+
                 </button>
+
               </div>
+
             </div>
+
           </>
+
         ) : (
+
+          /* ==========================================
+             EMPTY STATE
+             ========================================== */
+
           <div className="py-10 text-center">
+
             <div className="flex justify-center mb-2 text-slate-300">
+
               <svg
                 width="34"
                 height="34"
@@ -1061,35 +1195,53 @@ export default function AdminDashboard() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d="M12 2C8 5 5 8 5 13a7 7 0 0 0 14 0c0-5-3-8-7-11Z" />
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
 
-                <path d="M9 17c1.5 1 4.5 1 6 0" />
+                <polyline points="14 2 14 8 20 8" />
+
+                <line
+                  x1="16"
+                  y1="13"
+                  x2="8"
+                  y2="13"
+                />
+
+                <line
+                  x1="16"
+                  y1="17"
+                  x2="8"
+                  y2="17"
+                />
               </svg>
+
             </div>
 
             <p className="text-slate-400 text-xs">
-              {search ||
-              tipeGolonganFilter ||
-              golonganFilter ||
-              penyimpananFilter
-                ? 'Data wayang tidak ditemukan.'
-                : 'Belum ada data wayang.'}
+
+              {search || statusFilter
+                ? 'Data peminjaman tidak ditemukan.'
+                : 'Belum ada data peminjaman.'}
+
             </p>
 
             {!search &&
-              !tipeGolonganFilter &&
-              !golonganFilter &&
-              !penyimpananFilter && (
+              !statusFilter && (
+
                 <Link
-                  to="/admin/wayang/create"
+                  to="/admin/peminjaman/create"
                   className="inline-block mt-3 text-xs text-blue-500 hover:text-blue-600 no-underline"
                 >
-                  Tambah wayang
+                  Tambah peminjaman
                 </Link>
+
               )}
+
           </div>
+
         )}
+
       </div>
+
     </div>
   )
 }
