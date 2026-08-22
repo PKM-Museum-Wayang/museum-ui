@@ -39,7 +39,7 @@ body {
 
 .eyebrow {
   display: block;
-  font-size: 13px;
+  font-size: 20px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--color-gold) 80%, transparent);
