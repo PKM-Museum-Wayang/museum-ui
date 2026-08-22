@@ -92,13 +92,14 @@ export default function Home() {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
           // style={{ backgroundImage: "url('/museum-wayang.jpg')" }}
-          style={{ backgroundImage: "url('/bg.JPG')" }}
+          // style={{ backgroundImage: "url('/bg.JPG')" }}
+          style={{ backgroundImage: "url('/bg2.jpg')" }}
         />
         {/* Gradient overlay — mengikuti warna latar tema (gelap/terang) */}
         <div className="absolute inset-0 z-10 hero-overlay" />
 
         <div className="relative z-20 text-center px-8 animate-[fadeInUp_1s_ease_0.3s_both]">
-          <p className="eyebrow mb-6">Museum Wayang</p>
+          {/* <p className="eyebrow mb-6">Koleksi Wayang</p> */}
           <h1 className="font-display text-[clamp(48px,8vw,104px)] leading-[1] text-cream">
             Koleksi Wayang Sutarwin
           </h1>
@@ -227,7 +228,7 @@ export default function Home() {
             Lokasi Museum
           </h2>
           <div className="border hairline aspect-[16/6] flex items-center justify-center bg-panel">
-            <img src={gambarLokasi} alt="Lokasi Museum Wayang" />
+            <img src={gambarLokasi} alt="Lokasi Koleksi Wayang" />
           </div>
           <div className="btn mt-8 flex flex-wrap gap-4 justify-center">
             <button className="btn-primary">
