@@ -591,35 +591,47 @@ export default function GolonganManage() {
                               </button>
 
                               {/* DELETE */}
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleDelete(
-                                    golongan.id,
-                                  )
-                                }
-                                className="inline-flex items-center px-2.5 py-1.5 bg-red-500 hover:bg-red-600 text-white text-[0.7rem] font-medium rounded-md cursor-pointer border-none transition-colors"
+                            <button
+                              type="button"
+                              disabled={golongan._count.wayang > 0}
+                              onClick={() =>
+                                handleDelete(golongan.id)
+                              }
+                              title={
+                                golongan._count.wayang > 0
+                                  ? 'Golongan tidak dapat dihapus karena masih memiliki wayang.'
+                                  : 'Hapus golongan'
+                              }
+                              className={`inline-flex items-center px-2.5 py-1.5 text-white text-[0.7rem] font-medium rounded-md border-none transition-colors ${
+                                golongan._count.wayang > 0
+                                  ? 'bg-slate-300 cursor-not-allowed opacity-60'
+                                  : 'bg-red-500 hover:bg-red-600 cursor-pointer'
+                              }`}
+                            >
+                              <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="mr-1"
                               >
-                                <svg
-                                  width="12"
-                                  height="12"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  className="mr-1"
-                                >
-                                  <polyline points="3 6 5 6 21 6" />
-                                  <path d="M19 6l-1 14H6L5 6" />
-                                  <path d="M10 11v6" />
-                                  <path d="M14 11v6" />
-                                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                                </svg>
+                                <polyline points="3 6 5 6 21 6" />
 
-                                Hapus
-                              </button>
+                                <path d="M19 6l-1 14H6L5 6" />
+
+                                <path d="M10 11v6" />
+
+                                <path d="M14 11v6" />
+
+                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                              </svg>
+
+                              Hapus
+                            </button>
 
                             </div>
 
