@@ -14,10 +14,26 @@ interface WayangPeminjaman {
   nama: string
 }
 
+interface PenyimpananPeminjaman {
+  id: number
+  namaKotak: string
+}
+
 interface Peminjaman {
   id: number
+
   peminjam: Peminjam
-  wayang: WayangPeminjaman
+
+  /*
+   * Barang yang dipinjam bisa berupa:
+   * - Wayang
+   * - Penyimpanan
+   *
+   * Backend mengirim salah satunya.
+   */
+  wayang?: WayangPeminjaman | null
+  penyimpanan?: PenyimpananPeminjaman | null
+
   tanggalPinjam: string
   tanggalKembali: string
   keterangan?: string
@@ -186,6 +202,48 @@ export default function AdminPeminjaman() {
 
   /*
    * ==========================================
+   * GET BARANG
+   * ==========================================
+   *
+   * Barang bisa berupa:
+   * - Wayang
+   * - Penyimpanan
+   */
+
+  const getBarang = (peminjaman: Peminjaman) => {
+    if (peminjaman.wayang) {
+      return peminjaman.wayang.nama
+    }
+
+    if (peminjaman.penyimpanan) {
+      return peminjaman.penyimpanan.namaKotak
+    }
+
+    return '-'
+  }
+
+  /*
+   * ==========================================
+   * GET JENIS BARANG
+   * ==========================================
+   */
+
+  const getJenisBarang = (
+    peminjaman: Peminjaman,
+  ) => {
+    if (peminjaman.wayang) {
+      return 'Wayang'
+    }
+
+    if (peminjaman.penyimpanan) {
+      return 'Penyimpanan'
+    }
+
+    return '-'
+  }
+
+  /*
+   * ==========================================
    * STATUS
    * ==========================================
    */
@@ -288,9 +346,6 @@ export default function AdminPeminjaman() {
           page: prev.page - 1,
         }))
       } else {
-        /*
-         * Fetch ulang
-         */
         const params: {
           page: number
           limit: number
@@ -450,7 +505,7 @@ export default function AdminPeminjaman() {
         </h1>
 
         <p className="text-xs text-slate-400 mt-1">
-          Kelola data peminjaman koleksi wayang
+          Kelola data peminjaman barang
         </p>
 
       </div>
@@ -792,7 +847,7 @@ export default function AdminPeminjaman() {
                     {[
                       'No',
                       'Nama Peminjam',
-                      'Wayang',
+                      'Barang',
                       'Tanggal Pinjam',
                       'Tanggal Kembali',
                       'Status',
@@ -825,6 +880,12 @@ export default function AdminPeminjaman() {
                           pagination.limit +
                         idx +
                         1
+
+                      const barang =
+                        getBarang(peminjaman)
+
+                      const jenisBarang =
+                        getJenisBarang(peminjaman)
 
                       return (
 
@@ -861,14 +922,18 @@ export default function AdminPeminjaman() {
 
                           </td>
 
-                          {/* WAYANG */}
+                          {/* BARANG */}
 
-                          <td className="px-3.5 py-2.5 text-xs text-slate-600 border-b border-slate-100">
-                            {
-                              peminjaman
-                                .wayang
-                                .nama
-                            }
+                          <td className="px-3.5 py-2.5 border-b border-slate-100">
+
+                            <div className="text-xs text-slate-700 font-medium">
+                              {barang}
+                            </div>
+
+                            <div className="text-[0.65rem] text-slate-400 mt-0.5">
+                              {jenisBarang}
+                            </div>
+
                           </td>
 
                           {/* TANGGAL PINJAM */}
