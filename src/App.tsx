@@ -23,6 +23,8 @@ import AdminPeminjaman from './admin/PeminjamanManage'
 import AdminPeminjamanCreate from './admin/PeminjamanCreate'
 import AdminPeminjamanEdit from './admin/PeminjamanEdit'
 
+import KegiatanDetail from './pages/KegiatanDetail'
+
 
 export default function App() {
   return (
@@ -34,6 +36,7 @@ export default function App() {
           <Route path="/koleksi" element={<Koleksi />} />
           <Route path="/koleksi/:id" element={<KoleksiDetail />} />
           <Route path="/kegiatan" element={<Kegiatan />} />
+          <Route path="/kegiatan/:id" element={<KegiatanDetail />} />
           <Route path="/tentang" element={<About />} />
           <Route path="/kontak" element={<Kontak />} />
         </Route>
