@@ -1,12 +1,18 @@
 import { Link } from 'react-router-dom'
 import gambarInterior from '../assets/bg.jpg'
+import person1 from '../assets/pak_sutarwinarno.jpeg'
+import person2 from '../assets/pak_sutarwidargo.jpeg'
+import person3 from '../assets/pak_sutarwinarmo.jpeg'
+import person4 from '../assets/pak_kartono.jpeg'
+import person5 from '../assets/pak_rio.jpeg'
+
 
 const TIM = [
-  { nama: 'Drs. Sutarwinarno', peran: 'Pemilik Wayang' },
-  { nama: 'Bu Paulina', peran: 'Koordinator PKM' },
-  { nama: 'Pak Kartono', peran: 'Koordinator PKM' },
-  { nama: 'Nicolaus Reva Sagraha', peran: 'Pengembang Aplikasi' },
-  { nama: 'Vincensius Damar Adyatma', peran: 'Pengembang Aplikasi' },
+  { nama: 'Sutarwinarno', peran: 'Pemilik Wayang', gambar: person1 },
+  { nama: 'Sutarwindargo', peran: 'Pemilik Wayang', gambar: person2 },
+  { nama: 'Sutarwinarmo', peran: 'Pemilik Wayang', gambar: person3 },
+  { nama: 'Pak Kartono', peran: 'Koordinator PKM', gambar: person4 },
+  { nama: 'Pak Rio', peran: 'Koordinator PKM', gambar: person5 },
 ]
 
 export default function About() {
@@ -64,9 +70,9 @@ export default function About() {
             </h2>
           </div>
           <div className="mt-16 grid grid-cols-2 md:grid-cols-5 gap-6">
-            {TIM.map(({ nama, peran }, i) => (
+            {TIM.map(({ nama, peran, gambar }, i) => (
               <div key={nama} className="reveal" style={{ ['--rd' as string]: `${i * 80}ms` }}>
-                <div className="placeholder aspect-[3/4]">FOTO</div>
+                <div className="placeholder aspect-[3/4]"><img src={gambar} alt="" /></div>
                 <h4 className="font-display text-xl text-cream mt-4">{nama}</h4>
                 <p className="text-[10px] uppercase tracking-[0.15em] text-cream/45 mt-1">{peran}</p>
               </div>
