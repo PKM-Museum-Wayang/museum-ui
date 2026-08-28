@@ -378,24 +378,6 @@ export default function AdminDashboard() {
   }
 
 
-  const getTipeGolonganLabel = (
-    tipe: TipeGolongan,
-  ) => {
-    switch (tipe) {
-      case 'SIMPINGAN_KIRI':
-        return 'Simpingan Kiri'
-
-      case 'SIMPINGAN_KANAN':
-        return 'Simpingan Kanan'
-
-      case 'DUDHAHAN':
-        return 'Dudhahan'
-
-      default:
-        return tipe
-    }
-  }
-
 
   const handlePreviousPage = () => {
     if (pagination.page <= 1) {
