@@ -9,7 +9,10 @@ interface KegiatanDetailItem {
   deskripsi?: string | null
   tanggal: string
   lokasi: string
-  imageUrl?: string | null
+  gambar: {
+    id: number,
+    fileUrl: string
+  }[]
 }
 
 export default function KegiatanDetail() {
@@ -17,6 +20,7 @@ export default function KegiatanDetail() {
   const [kegiatan, setKegiatan] = useState<KegiatanDetailItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [activeSlide, setActiveSlide] = useState(0)
 
   useEffect(() => {
     setLoading(true)
@@ -66,13 +70,38 @@ export default function KegiatanDetail() {
 
           {/* Gambar */}
           <div className="md:col-span-7 reveal">
-            {kegiatan.imageUrl ? (
+            {kegiatan.gambar.length > 0 ? (
               <div className="aspect-[4/3] overflow-hidden">
                 <img
-                  src={`${BASE_URL}${kegiatan.imageUrl}`}
+                  src={`${BASE_URL}${kegiatan.gambar[activeSlide].fileUrl}`}
                   alt={kegiatan.nama}
                   className="w-full h-full object-cover"
                 />
+
+                {kegiatan.gambar.length > 1 && (
+                  <>
+                  <button type='button' onClick={() => setActiveSlide(prev => (prev - 1 + kegiatan.gambar.length) % kegiatan.gambar.length)}
+                    className='absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-ink/60 text-cream border-none cursor-pointer'
+                    >
+                      ←
+                    </button>
+
+                  <button type='button' onClick={() => setActiveSlide(prev => (prev + 1) % kegiatan.gambar.length)}
+                    className='absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-ink/60 text-cream border-none cursor-pointer'
+                    >
+                      →
+                    </button>
+
+                    <div className='absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2'>
+                      {kegiatan.gambar.map((_, idx) => (
+                        <button key={idx} type="button" onClick={() => setActiveSlide(idx)}
+                        className="w-2 h-2 rounded-full border-none cursor-pointer p-0"
+                        style={{ background: idx === activeSlide ? '#d4af37' : 'rgba(255,255,255,0.4)' }}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <div className="placeholder aspect-[4/3]">{kegiatan.nama.toUpperCase()}</div>
