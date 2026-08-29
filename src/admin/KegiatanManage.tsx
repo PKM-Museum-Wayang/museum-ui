@@ -10,7 +10,7 @@ interface KegiatanItem {
   deskripsi?: string | null
   tanggal: string
   lokasi: string
-  imageUrl?: string | null
+  gambar: { id: number; fileUrl: string }[]
 }
 
 interface Pagination {
@@ -274,9 +274,9 @@ export default function KegiatanManage() {
                         <td className="px-5 py-4 text-[0.9rem] text-slate-500 border-b border-slate-100">{nomor}</td>
 
                         <td className="px-5 py-4 border-b border-slate-100">
-                          {k.imageUrl ? (
+                          {k.gambar.length > 0 ? (
                             <img
-                              src={`${BASE_URL}${k.imageUrl}`}
+                              src={`${BASE_URL}${k.gambar[0].fileUrl}`}
                               alt={k.nama}
                               className="w-11 h-11 object-cover rounded-md"
                             />
