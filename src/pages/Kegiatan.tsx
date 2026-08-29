@@ -9,7 +9,7 @@ interface KegiatanItem {
   deskripsi?: string | null
   tanggal: string
   lokasi: string
-  imageUrl?: string | null
+  gambar: { id: number; fileUrl: string }[]
 }
 
 export default function Kegiatan() {
@@ -74,10 +74,10 @@ export default function Kegiatan() {
                       </div>
 
                      <div className="md:col-span-3">
-                        {k.imageUrl ? (
+                        {k.gambar.length > 0 ? (
                           <div className="aspect-[4/3] overflow-hidden">
                             <img
-                              src={`${BASE_URL}${k.imageUrl}`}
+                              src={`${BASE_URL}${k.gambar[0].fileUrl}`}
                               alt={k.nama}
                               className="w-full h-full object-cover"
                             />
