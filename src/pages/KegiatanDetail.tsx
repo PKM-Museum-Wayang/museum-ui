@@ -71,7 +71,7 @@ export default function KegiatanDetail() {
           {/* Gambar */}
           <div className="md:col-span-7 reveal">
             {kegiatan.gambar.length > 0 ? (
-              <div className="aspect-[4/3] overflow-hidden">
+              <div className="relative aspect-[4/3] overflow-hidden">
                 <img
                   src={`${BASE_URL}${kegiatan.gambar[activeSlide].fileUrl}`}
                   alt={kegiatan.nama}
@@ -87,7 +87,7 @@ export default function KegiatanDetail() {
                     </button>
 
                   <button type='button' onClick={() => setActiveSlide(prev => (prev + 1) % kegiatan.gambar.length)}
-                    className='absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-ink/60 text-cream border-none cursor-pointer'
+                    className='absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-ink/60 text-cream border-none cursor-pointer'
                     >
                       →
                     </button>
