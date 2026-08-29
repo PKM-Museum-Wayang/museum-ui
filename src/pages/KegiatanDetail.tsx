@@ -27,7 +27,7 @@ export default function KegiatanDetail() {
     setNotFound(false)
 
     api.get(`/kegiatan/${id}`)
-      .then(res => setKegiatan(res.data.data))
+      .then(res => setKegiatan({ ...res.data.data, gambar: res.data.data.gambar ?? [] }))
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false))
   }, [id])
