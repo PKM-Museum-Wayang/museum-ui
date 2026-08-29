@@ -63,7 +63,7 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
           deskripsi: k.deskripsi ?? '',
         })
 
-        setExistingGambar(k.gambar)
+        setExistingGambar(k.gambar ?? [])
       })
       .catch(() => setError('Gagal memuat data kegiatan.'))
       .finally(() => setLoading(false))
