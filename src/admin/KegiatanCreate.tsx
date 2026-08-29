@@ -23,8 +23,8 @@ export default function KegiatanFormModal({ onClose, onSuccess }: KegiatanFormMo
     deskripsi: '',
   })
 
-  const [file, setFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState('')
+  const [file, setFile] = useState<File[]>([])
+  const [previewUrl, setPreviewUrl] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
@@ -34,10 +34,15 @@ export default function KegiatanFormModal({ onClose, onSuccess }: KegiatanFormMo
       setForm(prev => ({ ...prev, [field]: e.target.value }))
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0]
-    if (!selected) return
-    setFile(selected)
-    setPreviewUrl(URL.createObjectURL(selected))
+    const selected = Array.from(e.target.files ?? [])
+    if (selected.length === 0) return
+    setFile(prev => [...prev, ...selected])
+    setPreviewUrl(prev => [...prev, ...selected.map(f => URL.createObjectURL(f))])
+  }
+
+  const removeFile = (idx: number) => {
+    setFile(prev => prev.filter((_, i) => i !== idx))
+    setPreviewUrl(prev => prev.filter((_, i) => i !== idx))
   }
 
   const validate = () => {
@@ -79,13 +84,14 @@ export default function KegiatanFormModal({ onClose, onSuccess }: KegiatanFormMo
 
       const kegiatanId = res.data?.data?.id
 
-      if (file && kegiatanId) {
-        const body = new FormData()
-        body.append('file', file)
-
-        await api.post(`/kegiatan/${kegiatanId}/gambar`, body, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        })
+      if (file.length > 0 && kegiatanId) {
+        for (const f of file) {
+          const b = new FormData()
+          b.append('file', f)
+          await api.post(`/kegiatan/${kegiatanId}/gambar`, b, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
+        }
       }
 
       onSuccess()
@@ -108,9 +114,23 @@ export default function KegiatanFormModal({ onClose, onSuccess }: KegiatanFormMo
             className="absolute inset-0"
             style={{ background: 'linear-gradient(155deg, #78350f 0%, #b45309 55%, #f59e0b 100%)' }}
           />
-          {previewUrl && (
+
+          <div className="flex flex-wrap gap-3 mt-3">
+            {previewUrl.map((url, idx) => (
+              <div key={idx} className="relative">
+                <img src={url} alt="" className="w-20 h-20 object-cover rounded-lg" />
+                <button type='button' onClick={() => removeFile(idx)}
+                  className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs border-none cursor-pointer"
+                  >
+                    ×
+                  </button>
+              </div>
+            ))}
+          </div>
+
+          {/* {previewUrl && (
             <img src={previewUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
-          )}
+          )} */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/85 via-slate-900/25 to-slate-900/10" />
 
           <label className="absolute top-4 right-4 inline-flex items-center gap-2 px-4 py-2 bg-white/95 text-slate-700 rounded-xl text-xs font-bold cursor-pointer hover:bg-white transition-colors">
