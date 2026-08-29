@@ -48,7 +48,7 @@ export default function Login() {
     setLoading(true)
 
     try {
-      await api.post(
+      const res = await api.post(
         '/auth/login',
         form,
         {
@@ -58,7 +58,14 @@ export default function Login() {
 
       // Tidak perlu menyimpan token.
       // Browser otomatis menyimpan HttpOnly Cookie.
-    sessionStorage.setItem('isLogin', 'true')
+      sessionStorage.setItem('isLogin', 'true')
+
+      // Dipakai form-form yang butuh adminId (mis. Tambah Kegiatan).
+      const adminId = res.data?.data?.admin?.id
+      if (adminId) {
+        sessionStorage.setItem('adminId', String(adminId))
+      }
+
       navigate('/admin/dashboard')
     } catch {
       setError('Username atau password salah.')

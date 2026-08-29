@@ -78,18 +78,16 @@ export default function Koleksi() {
   return (
     <>
       {/* ── PAGE HERO ── */}
-      <section className="page-hero px-8 md:px-20">
-        <div className="max-w-7xl mx-auto">
-          <div className="max-w-2xl reveal">
-            <h1 className="font-display text-cream text-[clamp(40px,6vw,72px)] leading-[1.05] mt-5">
-              Koleksi Wayang
-            </h1>
-            <p className="mt-6 max-w-xl text-cream/65 leading-[1.85]">
-              Koleksi wayang milik Bapak Sutarwinarno yang tersimpan dalam
-              sembilan kotak penyimpanan. Telusuri tokoh-tokohnya dan baca
-              cerita di balik setiap wayang.
-            </p>
-          </div>
+      <section className="relative min-h-[65vh] flex flex-col items-center justify-center overflow-hidden bg-ink">
+      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
+      style={{ backgroundImage: "url('/bg.JPG')"}}>
+      </div>
+      <div className="absolute inset-0 z-10 hero-overlay" />
+       <div className="relative z-20 text-center px-8 animate-[fadeInUp_1s_ease_0.3s_both]">
+          {/* <p className="eyebrow mb-6">Koleksi Wayang</p> */}
+          <h1 className="font-display text-[clamp(48px,8vw,104px)] leading-[1] text-cream">
+            Koleksi
+          </h1>
         </div>
       </section>
 
