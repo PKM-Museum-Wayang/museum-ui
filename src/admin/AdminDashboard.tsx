@@ -24,6 +24,8 @@ interface Wayang {
   kondisi?: string
   golonganId: number
   penyimpananId: number
+  createdAt: string
+  updatedAt?: string
   media: MediaWayang[]
 }
 
@@ -77,13 +79,13 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
+
   const normalizeTipeGolongan = (value: unknown): string => {
     return String(value ?? '')
       .trim()
       .toUpperCase()
       .replace(/\s+/g, '_')
   }
-
 
   const filteredGolongan = tipeGolonganFilter
     ? golonganList.filter((golongan) => {
@@ -96,23 +98,17 @@ export default function AdminDashboard() {
     : []
 
   const fetchGolongan = async () => {
-  try {
-    const res = await api.get('/golongan/all')
+    try {
+      const res = await api.get('/golongan/all')
 
-    console.log('=== RESPONSE GOLONGAN ===')
-    console.log(res.data)
+      const data: Golongan[] = res.data.data ?? []
 
-    const data: Golongan[] = res.data.data ?? []
-
-    console.log('=== DATA GOLONGAN ===')
-    console.table(data)
-
-    setGolonganList(data)
-  } catch (err) {
-    console.error(err)
-    setError('Gagal memuat data golongan.')
+      setGolonganList(data)
+    } catch (err) {
+      console.error(err)
+      setError('Gagal memuat data golongan.')
+    }
   }
-}
 
   const fetchPenyimpanan = async () => {
     try {
@@ -122,9 +118,6 @@ export default function AdminDashboard() {
         res.data.data?.data ??
         res.data.data ??
         []
-
-      console.log('=== DATA PENYIMPANAN ===')
-      console.log(data)
 
       setPenyimpananList(data)
     } catch (err) {
@@ -152,6 +145,7 @@ export default function AdminDashboard() {
         const params: {
           page: number
           limit: number
+          order: 'asc' | 'desc'
           search?: string
           tipeGolongan?: TipeGolongan
           golonganId?: number
@@ -159,13 +153,14 @@ export default function AdminDashboard() {
         } = {
           page: pagination.page,
           limit: pagination.limit,
-        }
 
+          // Terbaru -> terlama
+          order: 'desc',
+        }
 
         if (search.trim()) {
           params.search = search.trim()
         }
-
 
         if (tipeGolonganFilter) {
           params.tipeGolongan = tipeGolonganFilter
@@ -175,15 +170,11 @@ export default function AdminDashboard() {
           params.golonganId = Number(golonganFilter)
         }
 
-    
-
         if (penyimpananFilter) {
-          params.penyimpananId =
-            Number(penyimpananFilter)
+          params.penyimpananId = Number(
+            penyimpananFilter,
+          )
         }
-
-        console.log('=== PARAMS WAYANG ===')
-        console.log(params)
 
         const res = await api.get('/wayang', {
           params,
@@ -193,8 +184,7 @@ export default function AdminDashboard() {
           return
         }
 
-        const result: WayangResponse =
-          res.data.data
+        const result: WayangResponse = res.data.data
 
         setWayangList(result.data)
         setPagination(result.pagination)
@@ -239,7 +229,6 @@ export default function AdminDashboard() {
     }))
   }
 
-
   const handleTipeGolonganFilter = (
     value: TipeGolongan | '',
   ) => {
@@ -247,13 +236,12 @@ export default function AdminDashboard() {
 
     setGolonganFilter('')
 
-
     setPagination((prev) => ({
       ...prev,
       page: 1,
     }))
   }
- 
+
   const handleGolonganFilter = (
     value: string,
   ) => {
@@ -265,7 +253,6 @@ export default function AdminDashboard() {
     }))
   }
 
-
   const handlePenyimpananFilter = (
     value: string,
   ) => {
@@ -276,7 +263,6 @@ export default function AdminDashboard() {
       page: 1,
     }))
   }
-
 
   const handleDelete = async (id: number) => {
     const confirmed = window.confirm(
@@ -298,7 +284,6 @@ export default function AdminDashboard() {
         setSuccessMsg('')
       }, 3000)
 
-  
       if (
         wayangList.length === 1 &&
         pagination.page > 1
@@ -311,11 +296,10 @@ export default function AdminDashboard() {
         return
       }
 
-    
-
       const params: {
         page: number
         limit: number
+        order: 'asc' | 'desc'
         search?: string
         tipeGolongan?: TipeGolongan
         golonganId?: number
@@ -323,6 +307,9 @@ export default function AdminDashboard() {
       } = {
         page: pagination.page,
         limit: pagination.limit,
+
+        // Tetap terbaru -> terlama
+        order: 'desc',
       }
 
       if (search.trim()) {
@@ -364,7 +351,6 @@ export default function AdminDashboard() {
     }
   }
 
-
   const getThumb = (
     media: MediaWayang[],
   ) => {
@@ -376,26 +362,6 @@ export default function AdminDashboard() {
       ? `${BASE_URL}${img.fileUrl}`
       : null
   }
-
-
-  const getTipeGolonganLabel = (
-    tipe: TipeGolongan,
-  ) => {
-    switch (tipe) {
-      case 'SIMPINGAN_KIRI':
-        return 'Simpingan Kiri'
-
-      case 'SIMPINGAN_KANAN':
-        return 'Simpingan Kanan'
-
-      case 'DUDHAHAN':
-        return 'Dudhahan'
-
-      default:
-        return tipe
-    }
-  }
-
 
   const handlePreviousPage = () => {
     if (pagination.page <= 1) {
@@ -422,12 +388,8 @@ export default function AdminDashboard() {
     }))
   }
 
-
-
   return (
     <div className="text-sm">
-
-
       {error && (
         <div className="flex items-center gap-2 px-4 py-3 mb-4 rounded-lg text-[0.8rem] bg-red-50 text-red-800 border border-red-200">
           <svg
@@ -440,19 +402,8 @@ export default function AdminDashboard() {
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <circle
-              cx="12"
-              cy="12"
-              r="10"
-            />
-
-            <line
-              x1="12"
-              y1="8"
-              x2="12"
-              y2="12"
-            />
-
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
             <line
               x1="12"
               y1="16"
@@ -464,8 +415,6 @@ export default function AdminDashboard() {
           <span>{error}</span>
         </div>
       )}
-
-      {/* SUCCESS */}
 
       {successMsg && (
         <div className="flex items-center gap-2 px-4 py-3 mb-4 rounded-lg text-[0.8rem] bg-green-50 text-green-800 border border-green-200">
@@ -486,8 +435,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* HEADER */}
-
       <div className="mb-5">
         <h1 className="text-xl font-bold text-slate-900">
           Kelola Wayang
@@ -497,8 +444,6 @@ export default function AdminDashboard() {
           Kelola data koleksi wayang
         </p>
       </div>
-
-      {/* STATISTIC */}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <div className="bg-white rounded-lg shadow-sm border border-slate-100 px-4 py-3.5">
@@ -514,31 +459,26 @@ export default function AdminDashboard() {
             </div>
 
             <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
-             <svg
-  width="19"
-  height="19"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  strokeWidth="2"
-  strokeLinecap="round"
-  strokeLinejoin="round"
->
-  <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8Z" />
-  <path d="m3.3 7 8.7 5 8.7-5" />
-  <path d="M12 22V12" />
-</svg>
+              <svg
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8Z" />
+                <path d="m3.3 7 8.7 5 8.7-5" />
+                <path d="M12 22V12" />
+              </svg>
             </div>
           </div>
         </div>
       </div>
 
-      {/* FILTER */}
-
       <div className="flex flex-col xl:flex-row items-stretch gap-2.5 mb-4">
-
-        {/* SEARCH */}
-
         <div className="relative flex-1 min-w-0">
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -551,12 +491,7 @@ export default function AdminDashboard() {
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <circle
-              cx="11"
-              cy="11"
-              r="8"
-            />
-
+            <circle cx="11" cy="11" r="8" />
             <line
               x1="21"
               y1="21"
@@ -575,8 +510,6 @@ export default function AdminDashboard() {
             className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-xs outline-none bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
           />
         </div>
-
-        {/* TIPE GOLONGAN */}
 
         <select
           value={tipeGolonganFilter}
@@ -605,8 +538,6 @@ export default function AdminDashboard() {
             Dudhahan
           </option>
         </select>
-
-        {/* NAMA GOLONGAN */}
 
         <select
           value={golonganFilter}
@@ -640,8 +571,6 @@ export default function AdminDashboard() {
           )}
         </select>
 
-        {/* PENYIMPANAN */}
-
         <select
           value={penyimpananFilter}
           onChange={(e) =>
@@ -666,8 +595,6 @@ export default function AdminDashboard() {
             ),
           )}
         </select>
-
-        {/* TAMBAH */}
 
         <Link
           to="/admin/wayang/create"
@@ -702,10 +629,7 @@ export default function AdminDashboard() {
         </Link>
       </div>
 
-      {/* TABLE */}
-
       <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-slate-100">
-
         {loading ? (
           <div className="py-12 text-center text-slate-400 text-xs">
             Memuat data…
@@ -754,14 +678,9 @@ export default function AdminDashboard() {
                           key={wayang.id}
                           className="hover:bg-slate-50 transition-colors"
                         >
-
-                          {/* NO */}
-
                           <td className="px-3.5 py-2.5 text-xs text-slate-500 border-b border-slate-100">
                             {nomor}
                           </td>
-
-                          {/* GAMBAR */}
 
                           <td className="px-3.5 py-2.5 border-b border-slate-100">
                             {thumb ? (
@@ -777,25 +696,17 @@ export default function AdminDashboard() {
                             )}
                           </td>
 
-                          {/* NO WAYANG */}
-
                           <td className="px-3.5 py-2.5 text-xs text-slate-500 border-b border-slate-100 font-mono whitespace-nowrap">
                             {wayang.noWayang}
                           </td>
-
-                          {/* NAMA */}
 
                           <td className="px-3.5 py-2.5 text-xs text-slate-800 border-b border-slate-100 font-medium">
                             {wayang.nama}
                           </td>
 
-                          {/* DAERAH */}
-
                           <td className="px-3.5 py-2.5 text-xs text-slate-500 border-b border-slate-100">
                             {wayang.daerah ?? '—'}
                           </td>
-
-                          {/* KONDISI */}
 
                           <td className="px-3.5 py-2.5 border-b border-slate-100">
                             {wayang.kondisi ? (
@@ -809,13 +720,8 @@ export default function AdminDashboard() {
                             )}
                           </td>
 
-                          {/* AKSI */}
-
                           <td className="px-3.5 py-2.5 border-b border-slate-100">
                             <div className="flex gap-1.5">
-
-                              {/* EDIT */}
-
                               <Link
                                 to={`/admin/wayang/${wayang.id}/edit`}
                                 className="inline-flex items-center px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[0.7rem] font-medium rounded-md no-underline transition-colors"
@@ -832,14 +738,11 @@ export default function AdminDashboard() {
                                   className="mr-1"
                                 >
                                   <path d="M12 20h9" />
-
                                   <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
                                 </svg>
 
                                 Edit
                               </Link>
-
-                              {/* DELETE */}
 
                               <button
                                 type="button"
@@ -862,13 +765,9 @@ export default function AdminDashboard() {
                                   className="mr-1"
                                 >
                                   <polyline points="3 6 5 6 21 6" />
-
                                   <path d="M19 6l-1 14H6L5 6" />
-
                                   <path d="M10 11v6" />
-
                                   <path d="M14 11v6" />
-
                                   <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
                                 </svg>
 
@@ -884,33 +783,22 @@ export default function AdminDashboard() {
               </table>
             </div>
 
-            {/* PAGINATION */}
-
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3.5 py-3 border-t border-slate-100">
-
               <div className="text-xs text-slate-400">
                 Menampilkan{' '}
-
                 {(pagination.page - 1) *
                   pagination.limit +
                   1}{' '}
-
                 -{' '}
-
                 {Math.min(
                   pagination.page *
                     pagination.limit,
                   pagination.total,
                 )}{' '}
-
-                dari {pagination.total}{' '}
-                data
+                dari {pagination.total} data
               </div>
 
               <div className="flex items-center gap-1">
-
-                {/* PREVIOUS */}
-
                 <button
                   type="button"
                   disabled={
@@ -934,8 +822,6 @@ export default function AdminDashboard() {
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
                 </button>
-
-                {/* PAGE NUMBER */}
 
                 {Array.from(
                   {
@@ -1019,8 +905,6 @@ export default function AdminDashboard() {
                     },
                   )}
 
-                {/* NEXT */}
-
                 <button
                   type="button"
                   disabled={
@@ -1062,7 +946,6 @@ export default function AdminDashboard() {
                 strokeLinejoin="round"
               >
                 <path d="M12 2C8 5 5 8 5 13a7 7 0 0 0 14 0c0-5-3-8-7-11Z" />
-
                 <path d="M9 17c1.5 1 4.5 1 6 0" />
               </svg>
             </div>
