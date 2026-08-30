@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import fotoSutarwinarno from '../assets/pak_sutarwinarno.jpeg'
 
 const TOPIK_LIST = ['Kunjungan', 'Penelitian', 'Kerja Sama', 'Donasi Koleksi', 'Lainnya']
 
@@ -24,8 +25,24 @@ export default function Kontak() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
-    /* TODO: kirim ke endpoint API backend */
-    console.log('Form submitted:', form)
+
+    // Belum ada endpoint backend untuk formulir ini, jadi pesannya
+    // dikirim lewat aplikasi email pengunjung sendiri (mailto) —
+    // tetap benar-benar terkirim, cuma lewat email bukan database.
+    const subject = `[Kontak Koleksi] ${form.topik} — ${form.nama}`
+    const body = [
+      `Nama: ${form.nama}`,
+      `Asal: ${form.asal || '-'}`,
+      `Email: ${form.email}`,
+      `Telepon: ${form.telepon || '-'}`,
+      `Topik: ${form.topik}`,
+      '',
+      form.pesan,
+    ].join('\n')
+
+    window.location.href =
+      `mailto:museum.wayang@usd.ac.id?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+
     setSent(true)
   }
 
@@ -110,20 +127,39 @@ export default function Kontak() {
 
           {/* RIGHT: info */}
           <aside className="md:col-span-5 reveal" style={{ ['--rd' as string]: '200ms' }}>
-            <span className="eyebrow">Pemilik Museum</span>
+            <span className="eyebrow">Pemilik Koleksi</span>
 
             <div className="mt-6 border hairline p-8">
-              <div className="placeholder w-24 aspect-square text-[8px]">FOTO</div>
-              <h3 className="font-display text-3xl text-cream mt-6">Drs. Sutarwinarno</h3>
-              <p className="font-display italic text-gold mt-1">Pemilik Wayang</p>
+              <div className="w-24 aspect-square overflow-hidden">
+                <img
+                  src={fotoSutarwinarno}
+                  alt="Sutarwinarno"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h3 className="font-display text-3xl text-cream mt-6">Sutarwinarno</h3>
+              <p className="font-display italic text-gold mt-1">Pemilik Koleksi Wayang</p>
               <dl className="mt-8 space-y-4 text-[14px]">
                 <div className="border-t hairline pt-4">
                   <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">Surel Pribadi</dt>
-                  <dd className="text-cream/85 mt-2">Sutarwinarno@usd.ac.id</dd>
+                  <dd className="mt-2">
+                    <a href="mailto:sbimoputro@gmail.com" className="text-cream/85 hover:text-gold transition-colors">
+                      sbimoputro@gmail.com
+                    </a>
+                  </dd>
                 </div>
                 <div className="border-t hairline pt-4">
                   <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">WhatsApp</dt>
-                  <dd className="text-cream/85 mt-2">+62 812 2700 0001</dd>
+                  <dd className="mt-2">
+                    <a
+                      href="https://wa.me/62325329004"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-cream/85 hover:text-gold transition-colors"
+                    >
+                      +62 812 2700 0001
+                    </a>
+                  </dd>
                 </div>
               </dl>
             </div>
@@ -132,37 +168,23 @@ export default function Kontak() {
               <span className="eyebrow">Saluran Resmi</span>
               <dl className="mt-6 space-y-5 text-[14px]">
                 {[
-                  { label: 'Surel', val: 'museum.wayang@usd.ac.id' },
-                  { label: 'Telepon', val: '+62 274 513 301 (ext. 1408)' },
+                  { label: 'Surel', val: 'museum.wayang@usd.ac.id', href: 'mailto:museum.wayang@usd.ac.id' },
+                  { label: 'Telepon', val: '+62 274 513 301 (ext. 1408)', href: 'tel:+622745133011408' },
                   { label: 'Alamat', val: 'Kampus II USD\nJl. Affandi, Mrican,\nCaturtunggal, Yogyakarta 55281' },
                   { label: 'Jam Buka', val: 'Senin — Jumat · 09.00 — 14.00\nAkhir pekan dengan janji temu' },
-                ].map(({ label, val }) => (
+                ].map(({ label, val, href }) => (
                   <div key={label} className="border-t hairline pt-4 grid grid-cols-3">
                     <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">{label}</dt>
-                    <dd className="col-span-2 text-cream/85 leading-relaxed whitespace-pre-line">{val}</dd>
+                    {href ? (
+                      <dd className="col-span-2 leading-relaxed whitespace-pre-line">
+                        <a href={href} className="text-cream/85 hover:text-gold transition-colors">{val}</a>
+                      </dd>
+                    ) : (
+                      <dd className="col-span-2 text-cream/85 leading-relaxed whitespace-pre-line">{val}</dd>
+                    )}
                   </div>
                 ))}
               </dl>
-            </div>
-
-            <div className="mt-12 border-t hairline pt-8">
-              <span className="eyebrow">Sosial</span>
-              <div className="mt-4 flex flex-col gap-2 text-cream/85">
-                {[
-                  { handle: '@museumwayang.usd', platform: 'Instagram' },
-                  { handle: 'Museum Wayang USD', platform: 'YouTube' },
-                  { handle: 'museumwayang_usd', platform: 'TikTok' },
-                ].map(({ handle, platform }) => (
-                  <a
-                    key={platform}
-                    href="#"
-                    className="hover:text-gold transition-colors flex justify-between border-b hairline pb-2"
-                  >
-                    {handle}
-                    <span className="text-cream/40 text-[10px]">{platform}</span>
-                  </a>
-                ))}
-              </div>
             </div>
           </aside>
         </div>
@@ -170,7 +192,7 @@ export default function Kontak() {
 
       <footer className="border-t hairline px-8 md:px-20 py-12">
         <div className="max-w-7xl mx-auto flex justify-between text-[10px] uppercase tracking-[0.15em] text-cream/40">
-          <span>© 2026 Museum Wayang USD</span>
+          <span>© 2026 Koleksi Wayang Sutarwin</span>
           <Link to="/" className="hover:text-gold transition-colors">← Kembali ke beranda</Link>
         </div>
       </footer>

@@ -317,7 +317,7 @@ export default function GolonganManage() {
       )}
 
       {/* HEADER */}
-      <div className="mb-5 flex items-center justify-between">
+      <div className="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-slate-900">
             Kelola Golongan

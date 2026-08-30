@@ -13,7 +13,10 @@ interface KegiatanDetail {
   deskripsi?: string | null
   tanggal: string
   lokasi: string
-  imageUrl?: string | null
+  gambar: {
+    id: number,
+    fileUrl: string
+  }[]
 }
 
 interface FormState {
@@ -33,9 +36,9 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
     deskripsi: '',
   })
 
-  const [existingImageUrl, setExistingImageUrl] = useState('')
-  const [file, setFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState('')
+  const [existingGambar, setExistingGambar] = useState<{id: number, fileUrl: string}[]>([])
+  const [file, setFile] = useState<File[]>([])
+  const [previewUrl, setPreviewUrl] = useState<string[]>([])
 
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -60,7 +63,7 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
           deskripsi: k.deskripsi ?? '',
         })
 
-        setExistingImageUrl(k.imageUrl ?? '')
+        setExistingGambar(k.gambar ?? [])
       })
       .catch(() => setError('Gagal memuat data kegiatan.'))
       .finally(() => setLoading(false))
@@ -71,10 +74,10 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
       setForm(prev => ({ ...prev, [field]: e.target.value }))
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0]
-    if (!selected) return
-    setFile(selected)
-    setPreviewUrl(URL.createObjectURL(selected))
+    const selected = Array.from(e.target.files ?? [])
+    if (selected.length === 0) return
+    setFile(prev => [...prev, ...selected])
+    setPreviewUrl(prev => [...prev, ...selected.map(f => URL.createObjectURL(f))])
   }
 
   const validate = () => {
@@ -93,9 +96,10 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
     if (!validate()) return
 
     setSubmitting(true)
+
     try {
       const tanggalIso = new Date(`${form.tanggal}T${form.jam}`).toISOString()
-
+      
       await api.patch(`/kegiatan/${id}`, {
         nama: form.nama.trim(),
         deskripsi: form.deskripsi.trim() || undefined,
@@ -103,13 +107,16 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
         lokasi: form.lokasi.trim(),
       })
 
-      if (file) {
-        const body = new FormData()
-        body.append('file', file)
+      const kegiatanId = id
 
-        await api.post(`/kegiatan/${id}/gambar`, body, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        })
+      if (file.length > 0 && kegiatanId) {
+        for (const f of file) {
+          const b = new FormData()
+          b.append('file', f)
+          await api.post(`/kegiatan/${kegiatanId}/gambar`, b, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
+        }
       }
 
       onSuccess()
@@ -130,8 +137,6 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
     )
   }
 
-  const gambarUntukPreview = previewUrl || (existingImageUrl ? `${BASE_URL}${existingImageUrl}` : '')
-
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div
@@ -144,9 +149,7 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
             className="absolute inset-0"
             style={{ background: 'linear-gradient(155deg, #78350f 0%, #b45309 55%, #f59e0b 100%)' }}
           />
-          {gambarUntukPreview && (
-            <img src={gambarUntukPreview} alt="" className="absolute inset-0 w-full h-full object-cover" />
-          )}
+
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/85 via-slate-900/25 to-slate-900/10" />
 
           <label className="absolute top-4 right-4 inline-flex items-center gap-2 px-4 py-2 bg-white/95 text-slate-700 rounded-xl text-xs font-bold cursor-pointer hover:bg-white transition-colors">
@@ -178,6 +181,43 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
               {error}
             </div>
           )}
+
+          <div className="mb-5">
+            <label className="block text-sm font-bold text-slate-700 mb-2">Gambar Kegiatan</label>
+            <div className="flex flex-wrap gap-3">
+              {existingGambar.map(g => (
+                <div key={g.id} className="relative">
+                  <img src={`${BASE_URL}${g.fileUrl}`} alt="" className="w-20 h-20 object-cover rounded-lg" />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await api.delete(`/kegiatan/gambar/${g.id}`)
+                      setExistingGambar(prev => prev.filter(x => x.id !== g.id))
+                    }}
+                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs border-none cursor-pointer"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+
+              {previewUrl.map((url, idx) => (
+                <div key={idx} className="relative">
+                  <img src={url} alt="" className="w-20 h-20 object-cover rounded-lg" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFile(prev => prev.filter((_, i) => i !== idx))
+                      setPreviewUrl(prev => prev.filter((_, i) => i !== idx))
+                    }}
+                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs border-none cursor-pointer"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <div className="mb-5">
             <label className="block text-sm font-bold text-slate-700 mb-2">

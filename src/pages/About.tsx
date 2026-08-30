@@ -5,14 +5,16 @@ import person2 from '../assets/pak_sutarwidargo.jpeg'
 import person3 from '../assets/pak_sutarwinarmo.jpeg'
 import person4 from '../assets/pak_kartono.jpeg'
 import person5 from '../assets/pak_rio.jpeg'
+import person6 from '../assets/bu_polina.jpeg'
 
 
 const TIM = [
   { nama: 'Sutarwinarno', peran: 'Pemilik Wayang', gambar: person1 },
   { nama: 'Sutarwindargo', peran: 'Pemilik Wayang', gambar: person2 },
   { nama: 'Sutarwinarmo', peran: 'Pemilik Wayang', gambar: person3 },
-  { nama: 'Pak Kartono', peran: 'Koordinator PKM', gambar: person4 },
-  { nama: 'Pak Rio', peran: 'Koordinator PKM', gambar: person5 },
+  { nama: 'Agnes Maria Polina S.Kom., M.Sc.', peran: 'Koordinator PKM', gambar: person6 },
+  { nama: 'Ir.Kartono Pinaryanto S.T., M.Cs.', peran: 'Koordinator PKM', gambar: person4 },
+  { nama: 'Drs. Silverio R. L. Aji Sampurno, M.Hum.', peran: 'Koordinator PKM', gambar: person5 },
 ]
 
 export default function About() {
@@ -23,7 +25,7 @@ export default function About() {
         <div className="max-w-7xl mx-auto">
           <span className="eyebrow reveal">Tentang Kami</span>
           <h1 className="reveal font-display text-[clamp(40px,6vw,72px)] leading-[1.05] mt-4 text-cream" style={{ ['--rd' as string]: '100ms' }}>
-            Tentang Museum
+            Tentang Koleksi
           </h1>
           <p className="reveal mt-8 max-w-2xl text-cream/65 leading-[1.85] text-lg" style={{ ['--rd' as string]: '250ms' }}>
             Website ini dibuat untuk mendokumentasikan koleksi wayang milik
@@ -38,7 +40,7 @@ export default function About() {
         <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-10 md:gap-16">
           <div className="md:col-span-7 reveal">
             <div className="placeholder aspect-[4/3]">
-              <img src={gambarInterior} alt="INTERIOR MUSEUM · GALERI UTAMA" />
+              <img src={gambarInterior} alt="INTERIOR KOLEKSI · GALERI UTAMA" />
             </div>
           </div>
           <div className="md:col-span-5 reveal" style={{ ['--rd' as string]: '200ms' }}>
@@ -69,7 +71,7 @@ export default function About() {
               Tim di Balik Website Ini
             </h2>
           </div>
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-5 gap-6">
+          <div className="mt-16 grid grid-cols-2 md:grid-cols-6 gap-6">
             {TIM.map(({ nama, peran, gambar }, i) => (
               <div key={nama} className="reveal" style={{ ['--rd' as string]: `${i * 80}ms` }}>
                 <div className="placeholder aspect-[3/4]"><img src={gambar} alt="" /></div>
@@ -83,7 +85,7 @@ export default function About() {
 
       <footer className="border-t hairline px-8 md:px-20 py-12">
         <div className="max-w-7xl mx-auto flex justify-between text-[10px] uppercase tracking-[0.15em] text-cream/40">
-          <span>Museum Wayang USD</span>
+          <span>Koleksi Wayang Sutarwin</span>
           <Link to="/kontak" className="hover:text-gold transition-colors">Hubungi kami →</Link>
         </div>
       </footer>
