@@ -108,7 +108,7 @@ export default function Home() {
           </p>
           <div className="mt-12 flex flex-wrap gap-4 justify-center">
             <Link to="/koleksi" className="btn-primary">Jelajahi Koleksi →</Link>
-            <Link to="/tentang" className="btn-ghost">Tentang Museum</Link>
+            <Link to="/tentang" className="btn-ghost">Tentang Koleksi</Link>
           </div>
         </div>
 
@@ -225,7 +225,7 @@ export default function Home() {
       <section className="px-8 md:px-20 py-24 md:py-28 border-b hairline">
         <div className="max-w-7xl mx-auto reveal">
           <h2 className="font-display text-cream text-[clamp(28px,3.5vw,44px)] mt-3 mb-10">
-            Lokasi Museum
+            Lokasi Koleksi
           </h2>
           <div className="border hairline aspect-[16/6] flex items-center justify-center bg-panel">
             <img src={gambarLokasi} alt="Lokasi Koleksi Wayang" />
