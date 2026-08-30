@@ -6,9 +6,8 @@ import person3 from '../assets/pak_sutarwinarmo.jpeg'
 import person4 from '../assets/pak_kartono.jpeg'
 import person5 from '../assets/pak_rio.jpeg'
 import person6 from '../assets/bu_polina.jpeg'
-import person7 from '../assets/reva.jpg'
+import person7 from '../assets/reva1.jpg'
 import person8 from '../assets/vito.jpeg'
-
 
 const TIM = [
   { nama: 'Sutarwinarno', peran: 'Pemilik Wayang', gambar: person1 },
