@@ -77,6 +77,7 @@ const sidebarLinks = [
 
 export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
 const navigate = useNavigate()
 
 const handleLogout = async () => {
@@ -91,22 +92,55 @@ const handleLogout = async () => {
 }
   return (
     <div className="flex min-h-screen font-sans bg-slate-100 text-slate-800">
+
+      {/* ── Overlay (mobile, saat drawer terbuka) ── */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        />
+      )}
+
+      {/* ── Topbar (mobile saja) ── */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-30 flex items-center gap-3 px-4 py-3 bg-slate-900 text-white">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 border-none text-white cursor-pointer flex-shrink-0"
+          aria-label="Buka menu"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+        <span className="font-bold text-sm">Museum Wayang</span>
+      </div>
+
       {/* ── Sidebar ── */}
       <aside
-        className={`${collapsed ? 'w-[72px]' : 'w-[260px]'} fixed top-0 left-0 bottom-0 z-50 flex flex-col py-8 transition-all duration-300`}
+        className={`${collapsed ? 'md:w-[72px]' : 'md:w-[260px]'} ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 w-[260px] fixed top-0 left-0 bottom-0 z-50 flex flex-col py-8 transition-all duration-300`}
         style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}
       >
 
-        <button onClick={() => setCollapsed(v => !v)} className='absolute -right-3 top-8 w-6 h-6 flex items-center justify-center rounded-full bg-slate-800 border border-white/10 text-white cursor-pointer'>
+        <button onClick={() => setCollapsed(v => !v)} className='hidden md:flex absolute -right-3 top-8 w-6 h-6 items-center justify-center rounded-full bg-slate-800 border border-white/10 text-white cursor-pointer'>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
             className={collapsed ? 'rotate-180' : ''}>
               <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
 
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="md:hidden absolute right-4 top-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 border-none text-white cursor-pointer"
+          aria-label="Tutup menu"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
         {/* Brand */}
         <div className="px-6 pb-8 border-b border-white/10 mb-6">
-          {!collapsed && (
+          {(!collapsed || mobileOpen) && (
             <>
               <h2 className="text-white font-bold text-xl">Museum Wayang</h2>
               <span className="text-slate-400 text-xs mt-1 block">Dashboard Admin</span>
@@ -115,12 +149,13 @@ const handleLogout = async () => {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1">
+        <nav className="flex-1 overflow-y-auto">
           <ul className="list-none m-0 p-0">
             {sidebarLinks.map(({ to, label, icon }) => (
               <li key={to}>
                 <NavLink
                   to={to}
+                  onClick={() => setMobileOpen(false)}
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-6 py-[0.85rem] text-[0.9rem] no-underline border-l-[3px] transition-all ${
                       isActive
@@ -130,7 +165,7 @@ const handleLogout = async () => {
                   }
                 >
                   {icon}
-                  {!collapsed && label}
+                  {(!collapsed || mobileOpen) && label}
                 </NavLink>
               </li>
             ))}
@@ -163,7 +198,7 @@ const handleLogout = async () => {
       <line x1="21" y1="12" x2="9" y2="12" />
     </svg>
 
-    {!collapsed && (
+    {(!collapsed || mobileOpen) && (
       <span>Logout</span>
     )}
   </button>
@@ -185,7 +220,7 @@ const handleLogout = async () => {
       <path d="M15 18l-6-6 6-6" />
     </svg>
 
-    {!collapsed && (
+    {(!collapsed || mobileOpen) && (
       <span>Kembali ke Website</span>
     )}
   </Link>
@@ -194,7 +229,7 @@ const handleLogout = async () => {
       </aside>
 
       {/* ── Main ── */}
-      <main className={`flex-1 ${collapsed ? 'ml-[72px]': 'ml-[260px]'} min-h-screen p-8 transition-all duration-300`}>
+      <main className={`flex-1 ml-0 ${collapsed ? 'md:ml-[72px]': 'md:ml-[260px]'} min-h-screen pt-20 px-4 pb-6 md:p-8 transition-all duration-300 overflow-x-hidden`}>
         <Outlet />
       </main>
     </div>

@@ -143,8 +143,8 @@ export default function Kontak() {
                 <div className="border-t hairline pt-4">
                   <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">Surel Pribadi</dt>
                   <dd className="mt-2">
-                    <a href="mailto:Sutarwinarno@usd.ac.id" className="text-cream/85 hover:text-gold transition-colors">
-                      Sutarwinarno@usd.ac.id
+                    <a href="mailto:sbimoputro@gmail.com" className="text-cream/85 hover:text-gold transition-colors">
+                      sbimoputro@gmail.com
                     </a>
                   </dd>
                 </div>
@@ -152,7 +152,7 @@ export default function Kontak() {
                   <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">WhatsApp</dt>
                   <dd className="mt-2">
                     <a
-                      href="https://wa.me/6281227000001"
+                      href="https://wa.me/62325329004"
                       target="_blank"
                       rel="noreferrer"
                       className="text-cream/85 hover:text-gold transition-colors"

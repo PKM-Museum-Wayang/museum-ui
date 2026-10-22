@@ -6,15 +6,18 @@ import person3 from '../assets/pak_sutarwinarmo.jpeg'
 import person4 from '../assets/pak_kartono.jpeg'
 import person5 from '../assets/pak_rio.jpeg'
 import person6 from '../assets/bu_polina.jpeg'
-
+import person7 from '../assets/reva1.jpg'
+import person8 from '../assets/vito.jpeg'
 
 const TIM = [
   { nama: 'Sutarwinarno', peran: 'Pemilik Wayang', gambar: person1 },
   { nama: 'Sutarwindargo', peran: 'Pemilik Wayang', gambar: person2 },
   { nama: 'Sutarwinarmo', peran: 'Pemilik Wayang', gambar: person3 },
-  { nama: 'Ir.Paulina Heruningsih Prima Rosa S.Si., M.Sc.', peran: 'Koordinator PKM', gambar: person6 },
-  { nama: 'Ir.Kartono Pinaryanto S.T., M.Cs.', peran: 'Koordinator PKM', gambar: person4 },
+  { nama: 'Agnes Maria Polina, S.Kom., M.Sc.', peran: 'Koordinator PKM', gambar: person6 },
+  { nama: 'Ir.Kartono Pinaryanto, S.T., M.Cs.', peran: 'Koordinator PKM', gambar: person4 },
   { nama: 'Drs. Silverio R. L. Aji Sampurno, M.Hum.', peran: 'Koordinator PKM', gambar: person5 },
+  { nama: 'Nicolaus Reva Sagraha, S.Kom.', peran: 'Pengembang website', gambar: person7 },
+  { nama: 'Vincensius Damar Adyatma, S.Kom.', peran: 'Pengembang website', gambar: person8 }
 ]
 
 export default function About() {
