@@ -158,8 +158,8 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            Ganti Gambar
-            <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+            {existingGambar.length + file.length > 0 ? 'Tambah Gambar' : 'Pilih Gambar'}
+            <input type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
           </label>
 
           <div className="absolute left-6 right-6 bottom-5">
@@ -184,10 +184,10 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
 
           <div className="mb-5">
             <label className="block text-sm font-bold text-slate-700 mb-2">Gambar Kegiatan</label>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex gap-3 overflow-x-auto p-2">
               {existingGambar.map(g => (
-                <div key={g.id} className="relative">
-                  <img src={`${BASE_URL}${g.fileUrl}`} alt="" className="w-20 h-20 object-cover rounded-lg" />
+                <div key={g.id} className="relative shrink-0">
+                  <img src={`${BASE_URL}${g.fileUrl}`} alt="" className="w-48 h-32 object-cover rounded-lg" />
                   <button
                     type="button"
                     onClick={async () => {
@@ -202,8 +202,8 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
               ))}
 
               {previewUrl.map((url, idx) => (
-                <div key={idx} className="relative">
-                  <img src={url} alt="" className="w-20 h-20 object-cover rounded-lg" />
+                <div key={idx} className="relative shrink-0">
+                  <img src={url} alt="" className="w-48 h-32 object-cover rounded-lg" />
                   <button
                     type="button"
                     onClick={() => {

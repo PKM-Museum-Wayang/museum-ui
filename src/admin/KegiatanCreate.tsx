@@ -115,22 +115,8 @@ export default function KegiatanFormModal({ onClose, onSuccess }: KegiatanFormMo
             style={{ background: 'linear-gradient(155deg, #78350f 0%, #b45309 55%, #f59e0b 100%)' }}
           />
 
-          <div className="flex flex-wrap gap-3 mt-3">
-            {previewUrl.map((url, idx) => (
-              <div key={idx} className="relative">
-                <img src={url} alt="" className="w-20 h-20 object-cover rounded-lg" />
-                <button type='button' onClick={() => removeFile(idx)}
-                  className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs border-none cursor-pointer"
-                  >
-                    ×
-                  </button>
-              </div>
-            ))}
-          </div>
 
-          {/* {previewUrl && (
-            <img src={previewUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
-          )} */}
+
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/85 via-slate-900/25 to-slate-900/10" />
 
           <label className="absolute top-4 right-4 inline-flex items-center gap-2 px-4 py-2 bg-white/95 text-slate-700 rounded-xl text-xs font-bold cursor-pointer hover:bg-white transition-colors">
@@ -139,8 +125,8 @@ export default function KegiatanFormModal({ onClose, onSuccess }: KegiatanFormMo
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            {file.length > 0 ? 'Ganti Gambar' : 'Pilih Gambar'}
-            <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+            {file.length > 0 ? 'Tambah Gambar' : 'Pilih Gambar'}
+            <input type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
           </label>
 
           <div className="absolute left-6 right-6 bottom-5">
@@ -156,6 +142,23 @@ export default function KegiatanFormModal({ onClose, onSuccess }: KegiatanFormMo
 
         {/* FORM */}
         <form onSubmit={handleSubmit} className="p-6">
+          {previewUrl.length > 0 && (
+            <div className="mb-5">
+              <p className="text-sm font-bold text-slate-700 mb-2">Gambar Kegiatan</p>
+          <div className="flex gap-3 overflow-x-auto p-2">
+            {previewUrl.map((url, idx) => (
+              <div key={idx} className="relative shrink-0">
+                <img src={url} alt="" className="w-64 h-40 object-cover rounded-lg" />
+                <button type='button' onClick={() => removeFile(idx)}
+                  className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs border-none cursor-pointer"
+                  >
+                    ×
+                  </button>
+              </div>
+            ))}
+          </div>
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">

@@ -66,12 +66,12 @@ export default function KegiatanDetail() {
 
       {/* ── HERO ── */}
       <section className="px-8 md:px-20 pb-20 md:pb-28">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-12 md:gap-16">
+        <div className="max-w-7xl mx-auto flex flex-col gap-8 md:gap-16">
 
           {/* Gambar */}
-          <div className="md:col-span-7 reveal">
+          <div className="w-full reveal">
             {kegiatan.gambar.length > 0 ? (
-              <div className="relative aspect-[4/3] overflow-hidden">
+              <div className="relative aspect-video overflow-hidden">
                 <img
                   src={`${BASE_URL}${kegiatan.gambar[activeSlide].fileUrl}`}
                   alt={kegiatan.nama}
@@ -104,12 +104,12 @@ export default function KegiatanDetail() {
                 )}
               </div>
             ) : (
-              <div className="placeholder aspect-[4/3]">{kegiatan.nama.toUpperCase()}</div>
+              <div className="placeholder aspect-video">{kegiatan.nama.toUpperCase()}</div>
             )}
           </div>
 
           {/* Info */}
-          <div className="md:col-span-5 reveal" style={{ ['--rd' as string]: '200ms' }}>
+          <div className="w-full reveal" style={{ ['--rd' as string]: '200ms' }}>
             <span className="eyebrow">Detail Kegiatan</span>
 
             <h1 className="font-display text-[clamp(32px,5vw,56px)] text-cream leading-[1.05] mt-4">
