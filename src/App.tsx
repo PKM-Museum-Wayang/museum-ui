@@ -15,6 +15,8 @@ import GolonganManage from './admin/GolonganManage'
 import PenyimpananManage from './admin/kotakManage'
 import WayangCerita from './admin/AdminCerita'
 import KegiatanManage from './admin/KegiatanManage'
+import BiografiManage from './admin/BiografiManage'
+import PesanKontakManage from './admin/PesanKontakManage'
 
 import AuthOnly from './guards/AuthOnly'
 import AdminPeminjaman from './admin/PeminjamanManage'
@@ -55,6 +57,8 @@ export default function App() {
               <Route path="peminjaman/create" element={<AdminPeminjamanCreate />} />
               <Route path="peminjaman/:id/edit" element={<AdminPeminjamanEdit />} />
               <Route path="kegiatan" element={< KegiatanManage/> } />
+              <Route path="biografi" element={<BiografiManage />} />
+              <Route path="pesan-kontak" element={<PesanKontakManage />} />
          </Route>
         </Route>
       </Routes>
