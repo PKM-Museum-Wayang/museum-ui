@@ -5,6 +5,26 @@ import api from '../lib/api'
 
 const sidebarLinks = [
   {
+    to: '/admin/pesan-kontak',
+    label: 'Pesan Kontak',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 shrink-0">
+        <rect x="3" y="5" width="18" height="14" rx="2" />
+        <path d="m3 7 9 6 9-6" />
+      </svg>
+    ),
+  },
+  {
+    to: '/admin/biografi',
+    label: 'Biografi',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 shrink-0">
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21v-2a8 8 0 0 1 16 0v2" />
+      </svg>
+    ),
+  },
+  {
     to: '/admin/dashboard',
     label: 'Wayang',
     icon: (
