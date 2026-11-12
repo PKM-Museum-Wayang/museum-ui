@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 import Koleksi from './pages/Koleksi'
@@ -45,8 +45,9 @@ export default function App() {
         <Route path="/admin/login" element={<Login />} />
 
         {/* ── Admin dashboard ── */}
-        <Route path="/admin" element={<AdminLayout />}>
-         <Route element={<AuthOnly/>}>
+        <Route element={<AuthOnly />}>
+          <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="wayang/create" element={<WayangCreate />} />
               <Route path="wayang/:id/edit" element={<WayangEdit />} />
@@ -59,7 +60,8 @@ export default function App() {
               <Route path="kegiatan" element={< KegiatanManage/> } />
               <Route path="biografi" element={<BiografiManage />} />
               <Route path="pesan-kontak" element={<PesanKontakManage />} />
-         </Route>
+              <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

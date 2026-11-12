@@ -127,7 +127,7 @@ export default function Login() {
                 onChange={set('username')}
                 placeholder="Username admin"
                 required
-                className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
+                className="w-full px-4 py-3 text-sm text-black border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
               />
             </div>
 
@@ -142,7 +142,7 @@ export default function Login() {
                 onChange={set('password')}
                 placeholder="••••••••"
                 required
-                className="w-full px-4 py-3 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
+                className="w-full px-4 py-3 text-sm text-black border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
               />
             </div>
 

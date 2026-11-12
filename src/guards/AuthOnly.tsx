@@ -9,7 +9,7 @@ const AuthOnly = () => {
         )
     }else{
         return(
-            <Navigate to="/admin/login"/>
+            <Navigate to="/admin/login" replace />
         )
     }
    
