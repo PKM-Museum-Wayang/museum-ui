@@ -1,3 +1,4 @@
+import AdminLoading from '../components/AdminLoading'
 import { useEffect, useState } from 'react'
 
 import api from '../lib/api'
@@ -481,7 +482,7 @@ export default function GolonganManage() {
         {loading ? (
 
           <div className="py-12 text-center text-slate-400 text-xs">
-            Memuat data…
+            <AdminLoading />
           </div>
 
         ) : golonganList.length > 0 ? (

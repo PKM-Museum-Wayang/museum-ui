@@ -5,6 +5,7 @@ import gambarLokasi from '../assets/lokasi.png'
 import koleksiGambar1 from '../assets/foto-koleksi-1.jpg'
 import koleksiGambar2 from '../assets/foto-koleksi-2.jpeg'
 import api, { BASE_URL } from '../lib/api'
+import CollectionPhoto from '../components/CollectionPhoto'
 
 const TIPE_GOLONGAN_LABEL: Record<string, string> = {
   SIMPINGAN_KIRI: 'Simpingan Kiri',
@@ -51,12 +52,15 @@ const shuffle = <T,>(arr: T[]): T[] => {
 
 export default function Home() {
 
+  const [loadError, setLoadError] = useState(false)
+  const [retry, setRetry] = useState(0)
   const [totalWayang, setTotalWayang] = useState<number | null>(null)
   const [totalKotak, setTotalKotak] = useState<number | null>(null)
   const [totalJenis, setTotalJenis] = useState<number | null>(null)
   const [randomKoleksi, setRandomKoleksi] = useState<KoleksiPreviewItem[]>([])
 
   useEffect(() => {
+    setLoadError(false)
     Promise.all([
       api.get('/wayang?limit=100'),
       api.get('/penyimpanan'),
@@ -81,13 +85,13 @@ export default function Home() {
       })
 
       setRandomKoleksi(shuffle(koleksi).slice(0, 4))
-    }).catch(() => {})
-  }, [])
+    }).catch(() => setLoadError(true))
+  }, [retry])
 
   return (
     <>
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-ink">
+      <section className="relative min-h-[75svh] md:min-h-screen flex flex-col items-center justify-center overflow-hidden bg-ink py-12 md:py-0">
         {/* Background image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
@@ -100,28 +104,28 @@ export default function Home() {
 
         <div className="relative z-20 text-center px-8 animate-[fadeInUp_1s_ease_0.3s_both]">
           {/* <p className="eyebrow mb-6">Koleksi Wayang</p> */}
-          <h1 className="font-display text-[clamp(48px,8vw,104px)] leading-[1] text-cream">
+          <h1 className="font-display text-[clamp(36px,9vw,48px)] md:text-[clamp(48px,8vw,104px)] leading-[1] text-cream">
             Koleksi Wayang Sutarwin
           </h1>
           <p className="mt-8 text-cream/70 text-lg max-w-md mx-auto leading-relaxed">
             Merawat warisan, melanjutkan cerita.
           </p>
-          <div className="mt-12 flex flex-wrap gap-4 justify-center">
+          <div className="mt-8 md:mt-12 flex flex-wrap gap-3 md:gap-4 justify-center">
             <Link to="/koleksi" className="btn-primary">Jelajahi Koleksi →</Link>
             <Link to="/tentang" className="btn-ghost">Tentang Koleksi</Link>
           </div>
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3 animate-[fadeInUp_1s_ease_1s_both]">
+        <div className="relative mt-8 md:mt-0 md:absolute md:bottom-10 md:left-1/2 md:-translate-x-1/2 z-20 flex flex-col items-center gap-3 animate-[fadeInUp_1s_ease_1s_both]">
           <div className="scroll-mouse-box" />
-          <span className="text-[9px] uppercase tracking-[0.15em] text-cream/35">Scroll</span>
+          <span className="text-xs uppercase tracking-[0.15em] text-cream/65">Scroll</span>
         </div>
       </section>
 
       {/* ── TENTANG ── */}
-      <section className="px-8 md:px-20 py-24 md:py-32 border-b hairline">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+      <section className="px-5 sm:px-8 md:px-20 py-16 md:py-32 border-b hairline">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 md:gap-16 items-center">
           <div className="reveal">
             <span className="eyebrow">Tentang Koleksi</span>
             <h2 className="font-display text-[clamp(32px,4vw,48px)] leading-tight text-cream mt-4">
@@ -154,7 +158,7 @@ export default function Home() {
       </section>
 
       {/* ── COUNTER ── */}
-      <section className="px-8 md:px-20 py-20 border-b hairline bg-panel">
+      <section className="px-5 sm:px-8 md:px-20 py-12 md:py-20 border-b hairline bg-panel">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-8 reveal">
           {[
             { num: totalWayang !== null ? `${totalWayang}+`: '...' , label: 'Koleksi Wayang' },
@@ -165,14 +169,14 @@ export default function Home() {
               <p className="font-display text-[clamp(40px,6vw,72px)] text-gold number-tabular leading-none">
                 {num}
               </p>
-              <p className="text-[9px] uppercase tracking-[0.15em] text-cream/45 mt-3">{label}</p>
+              <p className="text-xs uppercase tracking-[0.15em] text-cream/65 mt-3">{label}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── KOLEKSI PREVIEW ── */}
-      <section className="px-8 md:px-20 py-24 md:py-28 border-b hairline">
+      <section className="px-5 sm:px-8 md:px-20 py-16 md:py-28 border-b hairline">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12 reveal">
             <div>
@@ -186,7 +190,10 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {loadError && <div className="text-center"><p>Data koleksi tidak dapat dimuat.</p><button className="btn-ghost mt-6" onClick={() => setRetry(n => n + 1)}>Coba lagi</button></div>}
+          {!loadError && totalWayang === null && <p role="status" className="text-cream/70">Memuat koleksi...</p>}
+          {!loadError && totalWayang === 0 && <p className="text-cream/70">Belum ada koleksi yang ditampilkan.</p>}
+          <div className="grid grid-cols-1 min-[360px]:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {randomKoleksi.map((k, i) => (
               <Link
                 key={k.id}
@@ -194,24 +201,12 @@ export default function Home() {
                 className="group block lift border hairline p-3 reveal"
                 style={{ ['--rd' as string]: `${i * 80}ms` }}
               >
-                {k.gambar ? (
-                  <div className="aspect-[3/4] overflow-hidden">
-                    <img
-                      src={k.gambar}
-                      alt={k.nama}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                    />
-                  </div>
-                ) : (
-                  <div className="placeholder aspect-[3/4] group-hover:opacity-80 transition-opacity">
-                    {k.nama.toUpperCase()}
-                  </div>
-                )}
+                <CollectionPhoto key={k.gambar} src={k.gambar} name={k.nama} />
                 <div className="mt-4 px-1">
-                  <h4 className="font-display text-xl text-cream group-hover:text-gold transition-colors">
+                  <h4 className="font-display text-lg md:text-xl text-cream group-hover:text-gold transition-colors">
                     {k.nama}
                   </h4>
-                  <p className="text-[10px] uppercase tracking-[0.15em] text-cream/45 mt-1">
+                  <p className="text-xs uppercase tracking-[0.15em] text-cream/65 mt-1">
                     {TIPE_GOLONGAN_LABEL[k.tipeGolongan] ?? 'Wayang Kulit'}
                   </p>
                 </div>

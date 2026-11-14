@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import axios from 'axios'
 import { Link, useParams } from 'react-router-dom'
 import Footer from '../components/Footer'
 import api, { BASE_URL } from '../lib/api'
+import CollectionPhoto from '../components/CollectionPhoto'
 
 const TIPE_GOLONGAN_LABEL: Record<string, string> = {
   SIMPINGAN_KIRI: 'Simpingan Kiri',
@@ -32,6 +34,7 @@ interface RelatedItem {
   id: number
   nama: string
   tipeGolongan: string
+  gambar?: string
 }
 
 export default function KoleksiDetail() {
@@ -40,10 +43,15 @@ export default function KoleksiDetail() {
   const [related, setRelated] = useState<RelatedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [error, setError] = useState(false)
+  const [retry, setRetry] = useState(0)
 
   useEffect(() => {
     setLoading(true)
     setNotFound(false)
+    setError(false)
+    setKoleksi(null)
+    setRelated([])
 
     api.get(`/wayang/${id}`)
       .then(res => {
@@ -53,27 +61,29 @@ export default function KoleksiDetail() {
         // Koleksi terkait: golongan yang sama, kecuali dirinya sendiri
         return api.get(`/wayang?golonganId=${w.golonganId}&limit=4`)
           .then(relRes => {
-            const list = relRes.data.data.data as { id: number; nama: string }[]
+            const list = relRes.data.data.data as { id: number; nama: string; media: MediaWayang[] }[]
             setRelated(
               list
                 .filter(item => item.id !== w.id)
                 .slice(0, 3)
-                .map(item => ({ id: item.id, nama: item.nama, tipeGolongan: w.golongan.tipeGolongan }))
+                .map(item => ({ id: item.id, nama: item.nama, tipeGolongan: w.golongan.tipeGolongan, gambar: item.media.find(m => m.jenis === 'IMAGE')?.fileUrl }))
             )
-          })
+          }).catch(() => setRelated([]))
       })
-      .catch(() => setNotFound(true))
+      .catch(err => { if (axios.isAxiosError(err) && err.response?.status === 404) setNotFound(true); else setError(true) })
       .finally(() => setLoading(false))
-  }, [id])
+  }, [id, retry])
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-cream/40">Memuat…</div>
+    return <div className="min-h-screen flex items-center justify-center text-cream/65">Memuat…</div>
   }
+
+  if (error) return <div className="min-h-screen flex flex-col items-center justify-center"><p>Gagal memuat koleksi.</p><button className="btn-ghost mt-6" onClick={() => setRetry(n => n + 1)}>Coba lagi</button></div>
 
   if (notFound || !koleksi) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-8 text-center">
-        <p className="font-display text-3xl text-cream/40">Koleksi tidak ditemukan.</p>
+        <p className="font-display text-3xl text-cream/65">Koleksi tidak ditemukan.</p>
         <Link to="/koleksi" className="btn-ghost mt-8">← Kembali ke Koleksi</Link>
       </div>
     )
@@ -85,35 +95,25 @@ export default function KoleksiDetail() {
   return (
     <>
       {/* ── BREADCRUMB ── */}
-      <div className="px-8 md:px-20 pt-32 md:pt-36 pb-6 text-[11px] uppercase tracking-[0.15em] text-cream/45 flex gap-3 items-center flex-wrap">
+      <div className="px-5 sm:px-8 md:px-20 pt-20 md:pt-36 pb-6 text-xs uppercase tracking-[0.15em] text-cream/65 flex gap-3 items-center flex-wrap">
         <Link to="/koleksi" className="hover:text-gold transition-colors">Koleksi</Link>
         <span className="text-gold/40">/</span>
         <span className="text-gold">{koleksi.nama}</span>
       </div>
 
       {/* ── HERO ── */}
-      <section className="px-8 md:px-20 pb-20 md:pb-28">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-12 md:gap-16">
+      <section className="px-5 sm:px-8 md:px-20 pb-20 md:pb-28">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
           {/* Gallery */}
           <div className="md:col-span-7 reveal">
-            {gambar ? (
-              <div className="aspect-[4/5] overflow-hidden">
-                <img
-                  src={`${BASE_URL}${gambar.fileUrl}`}
-                  alt={koleksi.nama}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ) : (
-              <div className="placeholder aspect-[4/5]">{koleksi.nama.toUpperCase()}</div>
-            )}
+            <CollectionPhoto key={gambar?.fileUrl} src={gambar ? `${BASE_URL}${gambar.fileUrl}` : undefined} name={koleksi.nama} className="aspect-[4/5]" />
           </div>
 
           {/* Info */}
           <div className="md:col-span-5 reveal" style={{ ['--rd' as string]: '200ms' }}>
             <span className="eyebrow">Detail Koleksi</span>
 
-            <h1 className="font-display text-[clamp(40px,6vw,72px)] text-cream leading-[1.05] mt-4">
+            <h1 className="font-display text-[clamp(32px,8vw,40px)] md:text-[clamp(40px,6vw,72px)] text-cream leading-[1.05] mt-4">
               {koleksi.nama}
             </h1>
             <p className="font-display italic text-2xl text-gold mt-3">{tipeLabel}</p>
@@ -121,34 +121,36 @@ export default function KoleksiDetail() {
             {/* Specs */}
             <dl className="mt-12 space-y-5">
               <div className="grid grid-cols-3 border-t hairline pt-4">
-                <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">Golongan</dt>
+                <dt className="text-xs uppercase tracking-[0.15em] text-gold/70">Golongan</dt>
                 <dd className="col-span-2 text-cream/85">{koleksi.golongan.namaGolongan} ({tipeLabel})</dd>
               </div>
               {koleksi.daerah && (
                 <div className="grid grid-cols-3 border-t hairline pt-4">
-                  <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">Daerah</dt>
+                  <dt className="text-xs uppercase tracking-[0.15em] text-gold/70">Daerah</dt>
                   <dd className="col-span-2 text-cream/85">{koleksi.daerah}</dd>
                 </div>
               )}
               {/* {koleksi.kondisi && (
                 <div className="grid grid-cols-3 border-t hairline pt-4">
-                  <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">Kondisi</dt>
+                  <dt className="text-xs uppercase tracking-[0.15em] text-gold/70">Kondisi</dt>
                   <dd className="col-span-2 text-cream/85">{koleksi.kondisi}</dd>
                 </div>
               )} */}
               {/* <div className="grid grid-cols-3 border-t hairline pt-4">
-                <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">No. Wayang</dt>
+                <dt className="text-xs uppercase tracking-[0.15em] text-gold/70">No. Wayang</dt>
                 <dd className="col-span-2 text-cream/85 font-mono">{koleksi.noWayang}</dd>
               </div> */}
 
-            {koleksi.deskripsi && (
-              <p className="mt-10 text-cream/70 leading-[1.85] text-[15px]">{koleksi.deskripsi}</p>
-            )}
-            {koleksi.cerita && (
-              <p className="mt-4 text-cream/60 leading-[1.85] text-[14px]">{koleksi.cerita}</p>
-            )}
-
             </dl>
+
+            {koleksi.deskripsi && <section className="mt-10 border-t hairline pt-6">
+              <h2 className="font-display text-2xl text-cream">Tentang {koleksi.nama}</h2>
+              <p className="mt-3 text-cream/80 leading-[1.85] whitespace-pre-line">{koleksi.deskripsi}</p>
+            </section>}
+            {koleksi.cerita && <section className="mt-8 border-t hairline pt-6">
+              <h2 className="font-display text-2xl text-cream">Cerita</h2>
+              <p className="mt-3 text-cream/80 leading-[1.85] whitespace-pre-line">{koleksi.cerita}</p>
+            </section>}
 
             <div className="mt-12 flex gap-4 flex-wrap">
               {/* <Link to="/kontak" className="btn-primary">Janji Kunjungan →</Link> */}
@@ -160,7 +162,7 @@ export default function KoleksiDetail() {
 
       {/* ── RELATED ── */}
       {related.length > 0 && (
-        <section className="px-8 md:px-20 py-24 md:py-28 border-t hairline">
+        <section className="px-5 sm:px-8 md:px-20 py-12 md:py-28 border-t hairline">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12 reveal">
               <div>
@@ -181,10 +183,10 @@ export default function KoleksiDetail() {
                   to={`/koleksi/${r.id}`}
                   className="lift border hairline p-3 block group"
                 >
-                  <div className="placeholder aspect-[3/4]">{r.nama.toUpperCase()}</div>
+                  <CollectionPhoto key={r.gambar} src={r.gambar ? `${BASE_URL}${r.gambar}` : undefined} name={r.nama} />
                   <div className="mt-4 px-1">
                     <h4 className="font-display text-xl group-hover:text-gold transition-colors">{r.nama}</h4>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-cream/45 mt-1">{tipeLabel}</p>
+                    <p className="text-xs uppercase tracking-[0.15em] text-cream/65 mt-1">{tipeLabel}</p>
                   </div>
                 </Link>
               ))}

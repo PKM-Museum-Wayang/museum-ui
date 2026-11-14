@@ -1,3 +1,4 @@
+import AdminLoading from '../components/AdminLoading'
 import { useState } from "react"
 import api from '../lib/api' 
 
@@ -55,7 +56,7 @@ export default function KotakCreate({ onClose, onSuccess}: PenyimpananFormModalP
                         </button>
                         <button type="submit" disabled={submitting}
                             className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white text-sm font-medium rounded-lg cursor-pointer border-none transition-colors">
-                            {submitting ? 'Menyimpan…' : 'Simpan'}
+                            {submitting ? <AdminLoading label="Menyimpan..." /> : 'Simpan'}
                         </button>
                     </div>
           </form>

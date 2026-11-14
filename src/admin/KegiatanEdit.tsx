@@ -1,3 +1,4 @@
+import AdminLoading from '../components/AdminLoading'
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import api, { BASE_URL } from '../lib/api'
 
@@ -116,12 +117,14 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
           await api.post(`/kegiatan/${kegiatanId}/gambar`, b, {
             headers: { 'Content-Type': 'multipart/form-data' }
           })
+          setFile(prev => prev.slice(1))
+          setPreviewUrl(prev => prev.slice(1))
         }
       }
 
       onSuccess()
     } catch {
-      setError('Gagal menyimpan perubahan. Coba lagi.')
+      setError('Penyimpanan belum selesai. Periksa perubahan dan coba lagi; gambar yang berhasil diunggah tidak akan diunggah ulang.')
     } finally {
       setSubmitting(false)
     }
@@ -131,7 +134,7 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
     return (
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
         <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md text-center text-slate-400 text-sm">
-          Memuat data…
+          <AdminLoading />
         </div>
       </div>
     )
@@ -294,7 +297,7 @@ export default function KegiatanEditModal({ id, onClose, onSuccess }: KegiatanEd
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              {submitting ? 'Menyimpan…' : 'Simpan Perubahan'}
+              {submitting ? <AdminLoading label="Menyimpan..." /> : 'Simpan Perubahan'}
             </button>
           </div>
         </form>
