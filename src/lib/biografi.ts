@@ -49,7 +49,7 @@ export const biografiApi = {
 }
 
 export function photoUrl(path: string) {
-  return new URL(path, BASE_URL).href
+  return `${BASE_URL}${path}`
 }
 
 export function biografiError(error: unknown) {
