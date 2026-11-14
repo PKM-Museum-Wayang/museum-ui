@@ -103,11 +103,11 @@ const navigate = useNavigate()
 const handleLogout = async () => {
   try {
     await api.post('/auth/logout')
-  } catch {
-    // Tetap logout dari sisi React meskipun request gagal
-  } finally {
     sessionStorage.removeItem('isLogin')
+    sessionStorage.removeItem('adminId')
     navigate('/admin/login', { replace: true })
+  } catch {
+    window.alert('Logout gagal. Periksa koneksi dan coba lagi.')
   }
 }
   return (

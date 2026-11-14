@@ -534,8 +534,8 @@ export default function AdminPeminjamanEdit() {
         namaPeminjam: string
         alamat: string
         noHp: string
-        wayangId?: number
-        penyimpananId?: number
+        wayangId?: number | null
+        penyimpananId?: number | null
         tanggalPinjam: string
         tanggalKembali: string
         keterangan?: string
@@ -558,10 +558,7 @@ export default function AdminPeminjamanEdit() {
         tanggalKembali:
           formData.tanggalKembali,
 
-        keterangan:
-          formData.keterangan.trim()
-            ? formData.keterangan.trim()
-            : undefined,
+        keterangan: formData.keterangan.trim(),
 
         status:
           formData.status,
@@ -573,6 +570,7 @@ export default function AdminPeminjamanEdit() {
         formData.barangType ===
         'WAYANG'
       ) {
+        payload.penyimpananId = null
         payload.wayangId = Number(
           formData.barangId,
         )
@@ -584,6 +582,7 @@ export default function AdminPeminjamanEdit() {
         formData.barangType ===
         'PENYIMPANAN'
       ) {
+        payload.wayangId = null
         payload.penyimpananId =
           Number(
             formData.barangId,

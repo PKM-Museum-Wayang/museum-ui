@@ -1,0 +1,70 @@
+.sejarah-grid {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.sejarah-column { min-width: 0; }
+.sejarah-copy p:first-child { margin-top: 0; }
+
+@media (min-width: 768px) {
+  .sejarah-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(3rem, 5vw, 5rem);
+  }
+}
+
+.sejarah-page header h1 {
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.sejarah-page h2 {
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.sejarah-page .sejarah-column p {
+  color: color-mix(in srgb, var(--color-cream) 85%, var(--color-ink));
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.9;
+}
+
+.sejarah-page strong {
+  color: var(--color-gold);
+  font-weight: 500;
+}
+
+.sejarah-page figure img {
+  display: block;
+  max-width: 100%;
+}
+
+.sejarah-page figcaption {
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-gold) 35%, transparent);
+  color: color-mix(in srgb, var(--color-cream) 75%, var(--color-ink));
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 767px) {
+  .sejarah-page header { padding-top: 4rem; padding-bottom: 3.5rem; }
+  .sejarah-page section { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+  .sejarah-page .sejarah-grid { gap: 1.75rem; }
+  .sejarah-page .sejarah-column p { line-height: 1.8; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sejarah-page .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
