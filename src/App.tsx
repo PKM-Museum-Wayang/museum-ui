@@ -5,6 +5,7 @@ import Koleksi from './pages/Koleksi'
 import KoleksiDetail from './pages/KoleksiDetail'
 import Kegiatan from './pages/Kegiatan'
 import About from './pages/About'
+import Sejarah from './pages/Sejarah'
 import Kontak from './pages/Kontak'
 import Login from './admin/Login'
 import AdminLayout from './admin/AdminLayout'
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/kegiatan" element={<Kegiatan />} />
           <Route path="/kegiatan/:id" element={<KegiatanDetail />} />
           <Route path="/tentang" element={<About />} />
+          <Route path="/tentang/sejarah" element={<Sejarah />} />
           <Route path="/kontak" element={<Kontak />} />
         </Route>
 

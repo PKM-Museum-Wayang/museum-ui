@@ -61,6 +61,7 @@ export default function About() {
               Setiap wayang memiliki nomor inventaris dan catatan kondisi
               yang didokumentasikan melalui website ini.
             </p>
+            <Link to="/tentang/sejarah" className="btn-ghost mt-8">Baca sejarah selengkapnya</Link>
           </div>
         </div>
       </section>
@@ -77,7 +78,7 @@ export default function About() {
           <div className="mt-16 grid grid-cols-2 md:grid-cols-6 gap-6">
             {TIM.map(({ nama, peran, gambar }, i) => (
               <div key={nama} className="reveal" style={{ ['--rd' as string]: `${i * 80}ms` }}>
-                <div className="placeholder aspect-[3/4]"><img src={gambar} alt="" /></div>
+                <div className="placeholder aspect-[3/4]"><img src={gambar} alt="" className={gambar === person8 ? 'w-full h-full object-cover object-[center_35%]' : undefined} /></div>
                 <h4 className="font-display text-xl text-cream mt-4">{nama}</h4>
                 <p className="text-[10px] uppercase tracking-[0.15em] text-cream/45 mt-1">{peran}</p>
               </div>
