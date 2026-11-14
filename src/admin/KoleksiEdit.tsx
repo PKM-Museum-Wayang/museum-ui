@@ -1,3 +1,4 @@
+import AdminLoading from '../components/AdminLoading'
 import { useState, useRef, useEffect, type ChangeEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import api from '../lib/api'
@@ -78,7 +79,7 @@ export default function KoleksiEdit() {
   }
 
   if (loading) {
-    return <div className="py-20 text-center text-slate-400">Memuat data…</div>
+    return <div className="py-20 text-center text-slate-400"><AdminLoading /></div>
   }
 
   return (
@@ -177,7 +178,7 @@ export default function KoleksiEdit() {
               disabled={submitting}
               className="px-6 py-[0.65rem] bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white text-sm font-medium rounded-lg cursor-pointer border-none transition-colors"
             >
-              {submitting ? 'Menyimpan…' : 'Simpan Perubahan'}
+              {submitting ? <AdminLoading label="Menyimpan..." /> : 'Simpan Perubahan'}
             </button>
             <Link
               to="/admin/dashboard"

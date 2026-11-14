@@ -1,3 +1,4 @@
+import AdminLoading from '../components/AdminLoading'
 import { useState, useRef, type ChangeEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../lib/api'
@@ -138,7 +139,7 @@ export default function KoleksiCreate() {
               disabled={submitting}
               className="px-6 py-[0.65rem] bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white text-sm font-medium rounded-lg cursor-pointer border-none transition-colors"
             >
-              {submitting ? 'Menyimpan…' : 'Simpan'}
+              {submitting ? <AdminLoading label="Menyimpan..." /> : 'Simpan'}
             </button>
             <Link
               to="/admin/dashboard"

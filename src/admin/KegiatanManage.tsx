@@ -1,3 +1,4 @@
+import AdminLoading from '../components/AdminLoading'
 import { useEffect, useState } from "react"
 import axios from 'axios'
 import api, { BASE_URL } from '../lib/api'
@@ -166,7 +167,7 @@ export default function KegiatanManage() {
 
       {showModal && (
         <KegiatanFormModal
-          onClose={() => setShowModal(false)}
+          onClose={() => { setShowModal(false); fetchKegiatan() }}
           onSuccess={() => {
             setShowModal(false)
             fetchKegiatan()
@@ -250,7 +251,7 @@ export default function KegiatanManage() {
      {/* TABEL */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-slate-400">Memuat data…</div>
+          <div className="py-16 text-center text-slate-400"><AdminLoading /></div>
         ) : kegiatanList.length > 0 ? (
           <>
             <div className="overflow-x-auto">
@@ -258,7 +259,7 @@ export default function KegiatanManage() {
                 <thead>
                   <tr>
                     {['No', 'Gambar', 'Nama Kegiatan', 'Tanggal & Jam', 'Lokasi', 'Aksi'].map((h) => (
-                      <th key={h} className="bg-slate-50 px-5 py-[0.85rem] text-left text-[0.8rem] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200 whitespace-nowrap">
+                      <th key={h} className="bg-slate-50 px-5 py-[0.85rem] text-left text-[0.68rem] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200 whitespace-nowrap">
                         {h}
                       </th>
                     ))}
@@ -271,7 +272,7 @@ export default function KegiatanManage() {
 
                     return (
                       <tr key={k.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-5 py-4 text-[0.9rem] text-slate-500 border-b border-slate-100">{nomor}</td>
+                        <td className="px-5 py-4 text-xs text-slate-500 border-b border-slate-100">{nomor}</td>
 
                         <td className="px-5 py-4 border-b border-slate-100">
                           {k.gambar.length > 0 ? (
@@ -287,15 +288,15 @@ export default function KegiatanManage() {
                           )}
                         </td>
 
-                        <td className="px-5 py-4 text-[0.9rem] text-slate-800 font-medium border-b border-slate-100">
+                        <td className="px-5 py-4 text-xs text-slate-800 font-medium border-b border-slate-100">
                           {k.nama}
                         </td>
 
-                        <td className="px-5 py-4 text-[0.9rem] text-slate-500 border-b border-slate-100 whitespace-nowrap">
+                        <td className="px-5 py-4 text-xs text-slate-500 border-b border-slate-100 whitespace-nowrap">
                           {formatTanggal(k.tanggal)}
                         </td>
 
-                        <td className="px-5 py-4 text-[0.9rem] text-slate-500 border-b border-slate-100">
+                        <td className="px-5 py-4 text-xs text-slate-500 border-b border-slate-100">
                           {k.lokasi}
                         </td>
 
@@ -303,13 +304,13 @@ export default function KegiatanManage() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => setEditingId(k.id)}
-                              className="inline-flex items-center px-3 py-[0.4rem] bg-amber-500 hover:bg-amber-600 text-white text-[0.8rem] font-medium rounded-lg cursor-pointer border-none transition-colors"
+                              className="inline-flex items-center px-3 py-[0.4rem] bg-amber-500 hover:bg-amber-600 text-white text-[0.7rem] font-medium rounded-lg cursor-pointer border-none transition-colors"
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => handleDelete(k.id)}
-                              className="inline-flex items-center px-3 py-[0.4rem] bg-red-500 hover:bg-red-600 text-white text-[0.8rem] font-medium rounded-lg cursor-pointer border-none transition-colors"
+                              className="inline-flex items-center px-3 py-[0.4rem] bg-red-500 hover:bg-red-600 text-white text-[0.7rem] font-medium rounded-lg cursor-pointer border-none transition-colors"
                             >
                               Hapus
                             </button>

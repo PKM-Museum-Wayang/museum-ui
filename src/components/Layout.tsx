@@ -1,12 +1,20 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Navigation from './Navigation'
+import logo from '../assets/logo.png'
 
 export default function Layout() {
   const { pathname } = useLocation()
+  const [opening, setOpening] = useState(true)
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setOpening(false), 1200)
+    return () => window.clearTimeout(timer)
+  }, [])
 
   /* Scroll-reveal observer */
   useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return
     const observer = new IntersectionObserver(
       entries => {
         entries.forEach(e => {
@@ -40,11 +48,23 @@ export default function Layout() {
   }, [pathname])
 
   return (
-    <div className="bg-ink text-cream min-h-screen">
-      <Navigation />
-      <main className="pt-16">
-        <Outlet />
-      </main>
-    </div>
+    <>
+      {opening && <div className="opening-screen" role="status" aria-live="polite">
+        <div className="opening-screen-content">
+          <div className="opening-screen-emblem"><img src={logo} alt="" className="opening-screen-logo" /></div>
+          <p className="opening-screen-kicker">Koleksi Wayang</p>
+          <p className="opening-screen-title">Sutarwin</p>
+          <p className="opening-screen-caption">Merawat warisan, melanjutkan cerita.</p>
+          <div className="opening-screen-progress" aria-hidden="true"><span /></div>
+          <span className="opening-screen-label">Memuat halaman...</span>
+        </div>
+      </div>}
+      <div className="bg-ink text-cream min-h-screen" inert={opening} aria-hidden={opening || undefined}>
+        <Navigation />
+        <main className="pt-16">
+          <Outlet />
+        </main>
+      </div>
+    </>
   )
 }

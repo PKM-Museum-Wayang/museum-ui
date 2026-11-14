@@ -1,7 +1,7 @@
+import Footer from '../components/Footer'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import axios from 'axios'
 import api from '../lib/api'
-import { Link } from 'react-router-dom'
 import { biografiApi, biografiError, photoUrl } from '../lib/biografi'
 import type { Biografi } from '../lib/biografi'
 
@@ -120,10 +120,10 @@ export default function Kontak() {
   return (
     <>
       {/* ── HEADER ── */}
-      <section className="pt-32 md:pt-44 pb-16 px-8 md:px-20 border-b hairline">
+      <section className="pt-20 md:pt-44 pb-16 px-5 sm:px-8 md:px-20 border-b hairline">
         <div className="max-w-7xl mx-auto">
           <span className="eyebrow reveal">Kontak</span>
-          <h1 className="reveal font-display text-[clamp(40px,6vw,72px)] leading-[1.05] mt-4 text-cream" style={{ ['--rd' as string]: '100ms' }}>
+          <h1 className="reveal font-display text-[clamp(32px,8vw,40px)] md:text-[clamp(40px,6vw,72px)] leading-[1.05] mt-4 text-cream" style={{ ['--rd' as string]: '100ms' }}>
             Hubungi Kami
           </h1>
           <p className="reveal mt-6 max-w-xl text-cream/65 leading-[1.85]" style={{ ['--rd' as string]: '250ms' }}>
@@ -135,8 +135,8 @@ export default function Kontak() {
       </section>
 
       {/* ── CONTENT ── */}
-      <section className="px-8 md:px-20 py-20 md:py-28">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-12 md:gap-16">
+      <section className="px-5 sm:px-8 md:px-20 py-12 md:py-28">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
 
           {/* LEFT: form */}
           <div className="md:col-span-7 reveal">
@@ -144,13 +144,13 @@ export default function Kontak() {
             <h2 className="font-display text-cream text-[clamp(28px,3.5vw,44px)] mt-3">Kirim Pesan</h2>
 
             {sent ? (
-              <div className="mt-12 border hairline p-10 text-center">
+              <div className="mt-12 border hairline p-6 md:p-10 text-center">
                 <p className="font-display text-3xl text-gold">Terima Kasih.</p>
                 <p className="mt-4 text-cream/65" role="status">Pesan Anda berhasil dikirim dan tersimpan. Terima kasih telah menghubungi kami.</p>
                 <button onClick={() => setSent(false)} className="btn-ghost mt-8">Kirim pesan lagi</button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} aria-busy={sending} className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+              <form onSubmit={handleSubmit} aria-busy={sending} className="mt-8 md:mt-12 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
                 {formError && <div role="alert" className="md:col-span-2 border border-red-400/40 bg-red-950/30 p-4 text-sm text-red-200">{formError}</div>}
                 <div>
                   <label htmlFor="namaLengkap" className="form-label">Nama Lengkap *</label>
@@ -170,7 +170,7 @@ export default function Kontak() {
                 <div>
                   <label htmlFor="noTelp" className="form-label">Telepon *</label>
                   <input id="noTelp" className="input" type="tel" value={form.noTelp} onChange={set('noTelp')} placeholder="081234567890" required maxLength={16} disabled={sending} aria-invalid={!!fieldErrors.noTelp} aria-describedby="noTelp-help" />
-                  <p id="noTelp-help" className={`mt-2 text-xs ${fieldErrors.noTelp ? 'text-red-300' : 'text-cream/50'}`}>{fieldErrors.noTelp || '8–15 digit, tanpa spasi atau tanda hubung.'}</p>
+                  <p id="noTelp-help" className={`mt-2 text-xs ${fieldErrors.noTelp ? 'text-red-300' : 'text-cream/70'}`}>{fieldErrors.noTelp || '8–15 digit, tanpa spasi atau tanda hubung.'}</p>
                 </div>
 
                 <div className="md:col-span-2">
@@ -220,13 +220,13 @@ export default function Kontak() {
                   alt={`Foto ${profile.namaPemilikKoleksi}`}
                   onError={() => setPhotoFailed(true)}
                   className="w-full h-full object-cover"
-                /> : <div className="w-full h-full grid place-items-center border hairline text-xs text-cream/50">Tanpa foto</div>}
+                /> : <div className="w-full h-full grid place-items-center border hairline text-xs text-cream/70">Tanpa foto</div>}
               </div>
               <h3 className="font-display text-3xl text-cream mt-6">{profile.namaPemilikKoleksi}</h3>
               <p className="font-display italic text-gold mt-1">Pemilik Koleksi Wayang</p>
               <dl className="mt-8 space-y-4 text-[14px]">
                 <div className="border-t hairline pt-4">
-                  <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">Surel Pribadi</dt>
+                  <dt className="text-xs uppercase tracking-[0.15em] text-gold/70">Surel Pribadi</dt>
                   <dd className="mt-2">
                     <a href={`mailto:${encodeURIComponent(profile.email)}`} className="text-cream/85 hover:text-gold transition-colors break-all">
                       {profile.email}
@@ -234,7 +234,7 @@ export default function Kontak() {
                   </dd>
                 </div>
                 <div className="border-t hairline pt-4">
-                  <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">Telepon</dt>
+                  <dt className="text-xs uppercase tracking-[0.15em] text-gold/70">Telepon</dt>
                   <dd className="mt-2">
                     <a
                       href={`tel:${profile.phoneNumber}`}
@@ -256,7 +256,7 @@ export default function Kontak() {
                   { label: 'Jam Buka', val: `${profile.jamBuka} — ${profile.jamTutup}` },
                 ].map(({ label, val }) => (
                   <div key={label} className="border-t hairline pt-4 grid grid-cols-3">
-                    <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">{label}</dt>
+                    <dt className="text-xs uppercase tracking-[0.15em] text-gold/70">{label}</dt>
                     <dd className="col-span-2 text-cream/85 leading-relaxed whitespace-pre-line break-words">{val}</dd>
                   </div>
                 ))}
@@ -273,12 +273,7 @@ export default function Kontak() {
         </div>
       </section>
 
-      <footer className="border-t hairline px-8 md:px-20 py-12">
-        <div className="max-w-7xl mx-auto flex justify-between text-[10px] uppercase tracking-[0.15em] text-cream/40">
-          <span>© 2026 Koleksi Wayang Sutarwin</span>
-          <Link to="/" className="hover:text-gold transition-colors">← Kembali ke beranda</Link>
-        </div>
-      </footer>
+      <Footer />
     </>
   )
 }

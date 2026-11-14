@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import api, { BASE_URL } from '../lib/api'
+import CollectionPhoto from '../components/CollectionPhoto'
 
 /* ── Types ── */
 interface MediaWayang {
@@ -14,13 +15,8 @@ interface WayangApi {
   id: number
   nama: string
   golonganId: number
+  golongan: { tipeGolongan: string }
   media: MediaWayang[]
-}
-
-interface Golongan {
-  id: number
-  namaGolongan: string
-  tipeGolongan: string
 }
 
 interface KoleksiItem {
@@ -45,60 +41,57 @@ export default function Koleksi() {
   const [search, setSearch] = useState('')
   const [activeTipe, setActiveTipe] = useState('')
 
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(0)
+  const [total, setTotal] = useState(0)
+  const [error, setError] = useState(false)
+  const [retry, setRetry] = useState(0)
+
   useEffect(() => {
-    Promise.all([
-      api.get('/wayang?limit=100'),
-      api.get('/golongan/all'),
-    ])
-      .then(([wayangRes, golonganRes]) => {
-        const wayangList: WayangApi[] = wayangRes.data.data.data
-        const golonganList: Golongan[] = golonganRes.data.data
-        const golonganMap = new Map(golonganList.map(g => [g.id, g]))
-
-        setKoleksi(wayangList.map(w => {
-          const gambarMedia = w.media.find(m => m.jenis === 'IMAGE')
-          return {
-            id: w.id,
-            nama: w.nama,
-            tipeGolongan: golonganMap.get(w.golonganId)?.tipeGolongan ?? '',
-            gambar: gambarMedia ? `${BASE_URL}${gambarMedia.fileUrl}` : undefined,
-          }
-        }))
+    const controller = new AbortController()
+    setLoading(true)
+    setError(false)
+    api.get('/wayang', { params: { page, limit: 24, search, tipeGolongan: activeTipe }, signal: controller.signal })
+      .then(res => {
+        const result = res.data.data
+        setTotal(result.pagination.total)
+        setTotalPages(result.pagination.totalPages)
+        setKoleksi(result.data.map((w: WayangApi) => ({
+          id: w.id, nama: w.nama, tipeGolongan: w.golongan.tipeGolongan,
+          gambar: w.media.find(m => m.jenis === 'IMAGE')?.fileUrl,
+        })).map((w: KoleksiItem) => ({ ...w, gambar: w.gambar ? `${BASE_URL}${w.gambar}` : undefined })))
       })
-      .catch(() => setKoleksi([]))
-      .finally(() => setLoading(false))
-  }, [])
-
-  const filtered = koleksi.filter(k => {
-    const matchTipe = !activeTipe || k.tipeGolongan === activeTipe
-    const matchSearch = !search || k.nama.toLowerCase().includes(search.toLowerCase())
-    return matchTipe && matchSearch
-  })
+      .catch(() => { if (!controller.signal.aborted) setError(true) })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
+  }, [page, search, activeTipe, retry])
+  const filtered = koleksi
 
   return (
     <>
       {/* ── PAGE HERO ── */}
-      <section className="relative min-h-[65vh] flex flex-col items-center justify-center overflow-hidden bg-ink">
+      <section className="relative min-h-[40svh] md:min-h-[65vh] flex flex-col items-center justify-center overflow-hidden bg-ink">
       <div className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
       style={{ backgroundImage: "url('/bg.JPG')"}}>
       </div>
       <div className="absolute inset-0 z-10 hero-overlay" />
        <div className="relative z-20 text-center px-8 animate-[fadeInUp_1s_ease_0.3s_both]">
           {/* <p className="eyebrow mb-6">Koleksi Wayang</p> */}
-          <h1 className="font-display text-[clamp(48px,8vw,104px)] leading-[1] text-cream">
+          <h1 className="font-display text-[clamp(36px,10vw,48px)] md:text-[clamp(48px,8vw,104px)] leading-[1] text-cream">
             Koleksi
           </h1>
         </div>
       </section>
 
       {/* ── FILTER BAR ── */}
-      <section className="px-8 md:px-20 py-12 border-b hairline">
+      <section className="px-5 sm:px-8 md:px-20 py-8 md:py-12 border-b hairline">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <ul className="flex flex-wrap items-center gap-x-8 gap-y-3 text-[11px] uppercase tracking-[0.15em] list-none m-0 p-0">
+          <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs uppercase tracking-[0.15em] list-none m-0 p-0">
             <li>
               <button
-                className={`${!activeTipe ? 'text-gold border-b border-gold pb-1' : 'text-cream/55 hover:text-gold transition-colors'}`}
-                onClick={() => setActiveTipe('')}
+                aria-pressed={!activeTipe}
+                className={`min-h-11 ${!activeTipe ? 'text-gold border-b border-gold pb-1' : 'text-cream/55 hover:text-gold transition-colors'}`}
+                onClick={() => { setActiveTipe(''); setPage(1) }}
               >
                 Semua
               </button>
@@ -106,8 +99,9 @@ export default function Koleksi() {
             {TIPE_GOLONGAN_LIST.map(t => (
               <li key={t.value}>
                 <button
-                  className={`${activeTipe === t.value ? 'text-gold border-b border-gold pb-1' : 'text-cream/55 hover:text-gold transition-colors'}`}
-                  onClick={() => setActiveTipe(t.value)}
+                  aria-pressed={activeTipe === t.value}
+                  className={`min-h-11 ${activeTipe === t.value ? 'text-gold border-b border-gold pb-1' : 'text-cream/55 hover:text-gold transition-colors'}`}
+                  onClick={() => { setActiveTipe(t.value); setPage(1) }}
                 >
                   {t.label}
                 </button>
@@ -116,15 +110,16 @@ export default function Koleksi() {
           </ul>
 
           {/* Search */}
-          <div className="flex items-center gap-3 border hairline px-4 py-2 min-w-[260px]">
+          <div className="flex items-center gap-3 border hairline px-4 py-2 w-full min-w-0 md:w-auto md:min-w-[240px]">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-gold/70 shrink-0">
               <circle cx="6" cy="6" r="5" stroke="currentColor" />
               <path d="M10 10l3 3" stroke="currentColor" strokeLinecap="round" />
             </svg>
             <input
-              className="bg-transparent text-sm outline-none flex-1 placeholder:text-cream/35 text-cream"
+              aria-label="Cari nama koleksi"
+              className="bg-transparent text-sm outline-none flex-1 placeholder:text-cream/65 text-cream"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => { setSearch(e.target.value); setPage(1) }}
               placeholder="Cari nama tokoh — mis. Arjuna"
             />
           </div>
@@ -132,31 +127,33 @@ export default function Koleksi() {
       </section>
 
       {/* ── COLLECTION GRID ── */}
-      <section className="px-8 md:px-20 py-20">
+      <section className="px-5 sm:px-8 md:px-20 py-12 md:py-20">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline justify-between mb-10">
             <p className="eyebrow">Daftar Koleksi</p>
-            <p className="font-mono text-[10px] text-cream/45 uppercase tracking-[0.15em]">
-              {filtered.length} koleksi
+            <p className="font-mono text-xs text-cream/65 uppercase tracking-[0.15em]">
+              {total} koleksi
             </p>
           </div>
 
           {loading ? (
-            <div className="text-center py-24">
-              <p className="font-display text-2xl text-cream/40">Memuat koleksi…</p>
+            <div className="text-center py-16 md:py-24">
+              <p className="font-display text-2xl text-cream/65">Memuat koleksi…</p>
             </div>
+          ) : error ? (
+            <div className="text-center py-16 md:py-24"><p>Gagal memuat koleksi.</p><button className="btn-ghost mt-6" onClick={() => setRetry(n => n + 1)}>Coba lagi</button></div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-24">
-              <p className="font-display text-2xl text-cream/40">Koleksi tidak ditemukan.</p>
-              <button
-                onClick={() => { setSearch(''); setActiveTipe('') }}
-                className="mt-6 inline-block text-[11px] uppercase tracking-[0.15em] text-gold hover:underline"
+            <div className="text-center py-16 md:py-24">
+              <p className="font-display text-2xl text-cream/75">{search || activeTipe ? 'Koleksi tidak ditemukan.' : 'Belum ada koleksi yang ditampilkan.'}</p>
+              {(search || activeTipe) && <button
+                onClick={() => { setSearch(''); setActiveTipe(''); setPage(1) }}
+                className="mt-6 inline-block text-xs uppercase tracking-[0.15em] text-gold hover:underline"
               >
                 Lihat semua koleksi
-              </button>
+              </button>}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 min-[360px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
               {filtered.map((k, idx) => (
                 <Link
                   key={k.id}
@@ -164,25 +161,20 @@ export default function Koleksi() {
                   className="group block lift border hairline p-3 reveal"
                   style={{ ['--rd' as string]: `${(idx % 4) * 80}ms` }}
                 >
-                  {k.gambar ? (
-                    <div className="aspect-[3/4] overflow-hidden">
-                      <img
-                        src={k.gambar}
-                        alt={k.nama}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                      />
-                    </div>
-                  ) : (
-                    <div className="placeholder aspect-[3/4]">{k.nama.toUpperCase()}</div>
-                  )}
+                  <CollectionPhoto key={k.gambar} src={k.gambar} name={k.nama} />
                   <div className="mt-4 px-1">
-                    <h4 className="font-display text-xl text-cream group-hover:text-gold transition-colors">{k.nama}</h4>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-cream/45 mt-1">{tipeGolonganLabel(k.tipeGolongan)}</p>
+                    <h4 className="font-display text-lg md:text-xl text-cream group-hover:text-gold transition-colors">{k.nama}</h4>
+                    <p className="text-xs uppercase tracking-[0.15em] text-cream/65 mt-1">{tipeGolonganLabel(k.tipeGolongan)}</p>
                   </div>
                 </Link>
               ))}
             </div>
           )}
+          {!loading && !error && totalPages > 1 && <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-6 mt-10">
+            <button className="btn-ghost disabled:opacity-40" disabled={page <= 1} onClick={() => setPage(page - 1)}>Sebelumnya</button>
+            <span>Halaman {page} dari {totalPages}</span>
+            <button className="btn-ghost disabled:opacity-40" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Berikutnya</button>
+          </div>}
         </div>
       </section>
 

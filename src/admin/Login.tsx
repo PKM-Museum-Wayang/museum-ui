@@ -1,3 +1,4 @@
+import AdminLoading from '../components/AdminLoading'
 import { useState, useEffect, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../lib/api'
@@ -151,7 +152,7 @@ export default function Login() {
               disabled={loading}
               className="w-full py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white text-sm font-medium rounded-lg border-none cursor-pointer transition-colors"
             >
-              {loading ? 'Masuk…' : 'Masuk'}
+              {loading ? <AdminLoading label="Masuk..." /> : 'Masuk'}
             </button>
 
           </form>

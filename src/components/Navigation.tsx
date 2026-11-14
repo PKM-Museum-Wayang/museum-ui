@@ -46,6 +46,15 @@ export default function Navigation() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  useEffect(() => {
+    if (!mobileOpen) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [mobileOpen])
+
   const closeMobile = () => setMobileOpen(false)
 
   return (
@@ -53,10 +62,10 @@ export default function Navigation() {
       <nav className={`museum-nav fixed top-0 left-0 right-0 z-50 ${scrolled ? 'scrolled' : ''}`}>
         <div className="max-w-8xl mx-auto flex items-center justify-between">
           <NavLink to="/" className="museum-nav-logo">
-            <img src={logo} alt="wayang" className="h-25 w-auto object-contain" />
+            <img src={logo} alt="Koleksi Wayang Sutarwin, beranda" className="h-16 md:h-20 w-auto object-contain" />
           </NavLink>
 
-          <ul className="hidden md:flex items-center gap-10 list-none m-0 p-0">
+          <ul className="hidden lg:flex items-center gap-8 list-none m-0 p-0">
             {navLinks.map(({ to, label, end }) => (
               <li key={to}>
                 <NavLink
@@ -76,8 +85,10 @@ export default function Navigation() {
           </ul>
 
           <button
-            className={`museum-hamburger md:hidden ${mobileOpen ? 'active' : ''}`}
-            aria-label="Buka menu"
+            className={`museum-hamburger lg:hidden ${mobileOpen ? 'active' : ''}`}
+            aria-label={mobileOpen ? 'Tutup menu' : 'Buka menu'}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-navigation"
             onClick={() => setMobileOpen(v => !v)}
           >
             <span />
@@ -88,7 +99,7 @@ export default function Navigation() {
       </nav>
 
       {/* Mobile panel */}
-      <div className={`museum-mobile-nav md:hidden ${mobileOpen ? ' open' : ''}`}>
+      {mobileOpen && <div id="mobile-navigation" className="museum-mobile-nav open lg:hidden">
         <ul className="flex flex-col items-center gap-8 text-[0.95rem] list-none m-0 p-0">
           {navLinks.map(({ to, label, end }) => (
             <li key={to}>
@@ -108,7 +119,7 @@ export default function Navigation() {
             <ThemeToggle />
           </li>
         </ul>
-      </div>
+      </div>}
     </>
   )
 }

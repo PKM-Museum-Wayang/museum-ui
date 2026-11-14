@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import axios from 'axios'
 import { Link, useParams } from 'react-router-dom'
 import Footer from '../components/Footer'
 import api, { BASE_URL } from '../lib/api'
@@ -20,26 +21,31 @@ export default function KegiatanDetail() {
   const [kegiatan, setKegiatan] = useState<KegiatanDetailItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [error, setError] = useState(false)
+  const [retry, setRetry] = useState(0)
   const [activeSlide, setActiveSlide] = useState(0)
 
   useEffect(() => {
     setLoading(true)
     setNotFound(false)
+    setError(false)
 
     api.get(`/kegiatan/${id}`)
       .then(res => setKegiatan({ ...res.data.data, gambar: res.data.data.gambar ?? [] }))
-      .catch(() => setNotFound(true))
+      .catch(err => { if (axios.isAxiosError(err) && err.response?.status === 404) setNotFound(true); else setError(true) })
       .finally(() => setLoading(false))
-  }, [id])
+  }, [id, retry])
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-cream/40">Memuat…</div>
+    return <div className="min-h-screen flex items-center justify-center text-cream/65">Memuat…</div>
   }
+
+  if (error) return <div className="min-h-screen flex flex-col items-center justify-center"><p>Gagal memuat kegiatan.</p><button className="btn-ghost mt-6" onClick={() => setRetry(n => n + 1)}>Coba lagi</button></div>
 
   if (notFound || !kegiatan) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-8 text-center">
-        <p className="font-display text-3xl text-cream/40">Kegiatan tidak ditemukan.</p>
+        <p className="font-display text-3xl text-cream/65">Kegiatan tidak ditemukan.</p>
         <Link to="/kegiatan" className="btn-ghost mt-8">← Kembali ke Kegiatan</Link>
       </div>
     )
@@ -58,15 +64,15 @@ export default function KegiatanDetail() {
   return (
     <>
       {/* ── BREADCRUMB ── */}
-      <div className="px-8 md:px-20 pt-32 md:pt-36 pb-6 text-[11px] uppercase tracking-[0.15em] text-cream/45 flex gap-3 items-center flex-wrap">
+      <div className="px-5 sm:px-8 md:px-20 pt-20 md:pt-36 pb-6 text-xs uppercase tracking-[0.15em] text-cream/65 flex gap-3 items-center flex-wrap">
         <Link to="/kegiatan" className="hover:text-gold transition-colors">Kegiatan</Link>
         <span className="text-gold/40">/</span>
         <span className="text-gold">{kegiatan.nama}</span>
       </div>
 
       {/* ── HERO ── */}
-      <section className="px-8 md:px-20 pb-20 md:pb-28">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-12 md:gap-16">
+      <section className="px-5 sm:px-8 md:px-20 pb-20 md:pb-28">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
 
           {/* Gambar */}
           <div className="md:col-span-7 reveal">
@@ -80,24 +86,26 @@ export default function KegiatanDetail() {
 
                 {kegiatan.gambar.length > 1 && (
                   <>
-                  <button type='button' onClick={() => setActiveSlide(prev => (prev - 1 + kegiatan.gambar.length) % kegiatan.gambar.length)}
-                    className='absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-ink/60 text-cream border-none cursor-pointer'
+                  <button type='button' aria-label="Gambar sebelumnya" onClick={() => setActiveSlide(prev => (prev - 1 + kegiatan.gambar.length) % kegiatan.gambar.length)}
+                    className='absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-ink/80 text-cream border-none cursor-pointer'
                     >
                       ←
                     </button>
 
-                  <button type='button' onClick={() => setActiveSlide(prev => (prev + 1) % kegiatan.gambar.length)}
-                    className='absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-ink/60 text-cream border-none cursor-pointer'
+                  <button type='button' aria-label="Gambar berikutnya" onClick={() => setActiveSlide(prev => (prev + 1) % kegiatan.gambar.length)}
+                    className='absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-ink/80 text-cream border-none cursor-pointer'
                     >
                       →
                     </button>
 
-                    <div className='absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2'>
+                    <div className='absolute bottom-0 left-1/2 -translate-x-1/2 flex'>
                       {kegiatan.gambar.map((_, idx) => (
                         <button key={idx} type="button" onClick={() => setActiveSlide(idx)}
-                        className="w-2 h-2 rounded-full border-none cursor-pointer p-0"
-                        style={{ background: idx === activeSlide ? '#d4af37' : 'rgba(255,255,255,0.4)' }}
-                        />
+                          aria-label={`Tampilkan gambar ${idx + 1}`}
+                          aria-pressed={idx === activeSlide}
+                          className="w-11 h-11 flex items-center justify-center border-none cursor-pointer bg-transparent p-0">
+                          <span aria-hidden="true" className={`w-2.5 h-2.5 rounded-full ${idx === activeSlide ? 'bg-gold' : 'bg-white/70'}`} />
+                        </button>
                       ))}
                     </div>
                   </>
@@ -118,15 +126,15 @@ export default function KegiatanDetail() {
 
             <dl className="mt-10 space-y-5">
               <div className="grid grid-cols-3 border-t hairline pt-4">
-                <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">Tanggal</dt>
+                <dt className="text-xs uppercase tracking-[0.15em] text-gold/70">Tanggal</dt>
                 <dd className="col-span-2 text-cream/85">{tanggalLabel}</dd>
               </div>
               <div className="grid grid-cols-3 border-t hairline pt-4">
-                <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">Jam</dt>
+                <dt className="text-xs uppercase tracking-[0.15em] text-gold/70">Jam</dt>
                 <dd className="col-span-2 text-cream/85">{jamLabel} WIB</dd>
               </div>
               <div className="grid grid-cols-3 border-t hairline pt-4">
-                <dt className="text-[10px] uppercase tracking-[0.15em] text-gold/70">Lokasi</dt>
+                <dt className="text-xs uppercase tracking-[0.15em] text-gold/70">Lokasi</dt>
                 <dd className="col-span-2 text-cream/85">{kegiatan.lokasi}</dd>
               </div>
             </dl>

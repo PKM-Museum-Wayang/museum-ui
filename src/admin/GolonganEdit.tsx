@@ -1,3 +1,4 @@
+import AdminLoading from '../components/AdminLoading'
 import { useEffect, useState, type ChangeEvent } from "react"
 import api from '../lib/api'
 
@@ -79,7 +80,7 @@ export default function GolonganEdit({id, onClose, onSuccess}: GolonganFormModal
         return (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
                 <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md text-center text-slate-400 text-sm">
-                    Memuat data…
+                    <AdminLoading />
                 </div>
             </div>
         )
@@ -131,7 +132,7 @@ export default function GolonganEdit({id, onClose, onSuccess}: GolonganFormModal
                         </button>
                         <button type="submit" disabled={submitting}
                             className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white text-sm font-medium rounded-lg cursor-pointer border-none transition-colors">
-                            {submitting ? 'Menyimpan…' : 'Simpan'}
+                            {submitting ? <AdminLoading label="Menyimpan..." /> : 'Simpan'}
                         </button>
                     </div>
                 </form>

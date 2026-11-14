@@ -1,3 +1,4 @@
+import AdminLoading from '../components/AdminLoading'
 import { useEffect, useMemo, useState } from 'react'
 
 import api from '../lib/api'
@@ -395,7 +396,7 @@ export default function KotakManage() {
         {loading ? (
 
           <div className="py-12 text-center text-slate-400 text-xs">
-            Memuat data…
+            <AdminLoading />
           </div>
 
         ) : currentKotak.length > 0 ? (

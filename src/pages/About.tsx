@@ -1,3 +1,4 @@
+import Footer from '../components/Footer'
 import { Link } from 'react-router-dom'
 import gambarInterior from '../assets/bg.jpg'
 import person1 from '../assets/pak_sutarwinarno.jpeg'
@@ -24,10 +25,10 @@ export default function About() {
   return (
     <>
       {/* ── HERO ── */}
-      <section className="pt-32 md:pt-44 pb-20 md:pb-28 px-8 md:px-20 border-b hairline">
+      <section className="pt-20 md:pt-44 pb-12 md:pb-28 px-5 sm:px-8 md:px-20 border-b hairline">
         <div className="max-w-7xl mx-auto">
           <span className="eyebrow reveal">Tentang Kami</span>
-          <h1 className="reveal font-display text-[clamp(40px,6vw,72px)] leading-[1.05] mt-4 text-cream" style={{ ['--rd' as string]: '100ms' }}>
+          <h1 className="reveal font-display text-[clamp(32px,8vw,40px)] md:text-[clamp(40px,6vw,72px)] leading-[1.05] mt-4 text-cream" style={{ ['--rd' as string]: '100ms' }}>
             Tentang Koleksi
           </h1>
           <p className="reveal mt-8 max-w-2xl text-cream/65 leading-[1.85] text-lg" style={{ ['--rd' as string]: '250ms' }}>
@@ -39,7 +40,7 @@ export default function About() {
       </section>
 
       {/* ── VISION ── */}
-      <section className="px-8 md:px-20 py-24 md:py-32 border-b hairline">
+      <section className="px-5 sm:px-8 md:px-20 py-12 md:py-32 border-b hairline">
         <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-10 md:gap-16">
           <div className="md:col-span-7 reveal">
             <div className="placeholder aspect-[4/3]">
@@ -67,7 +68,7 @@ export default function About() {
       </section>
 
       {/* ── TIM ── */}
-      <section className="px-8 md:px-20 py-24 md:py-32">
+      <section className="px-5 sm:px-8 md:px-20 py-12 md:py-32">
         <div className="max-w-7xl mx-auto">
           <div className="reveal">
             <span className="eyebrow">Tim</span>
@@ -75,24 +76,19 @@ export default function About() {
               Tim di Balik Website Ini
             </h2>
           </div>
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-6 gap-6">
+          <div className="mt-10 md:mt-16 grid grid-cols-2 md:grid-cols-6 gap-4 md:gap-6">
             {TIM.map(({ nama, peran, gambar }, i) => (
               <div key={nama} className="reveal" style={{ ['--rd' as string]: `${i * 80}ms` }}>
                 <div className="placeholder aspect-[3/4]"><img src={gambar} alt="" className={gambar === person8 ? 'w-full h-full object-cover object-[center_35%]' : undefined} /></div>
-                <h4 className="font-display text-xl text-cream mt-4">{nama}</h4>
-                <p className="text-[10px] uppercase tracking-[0.15em] text-cream/45 mt-1">{peran}</p>
+                <h4 className="font-display text-base md:text-xl text-cream mt-3 md:mt-4">{nama}</h4>
+                <p className="text-xs uppercase tracking-[0.15em] text-cream/65 mt-1">{peran}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <footer className="border-t hairline px-8 md:px-20 py-12">
-        <div className="max-w-7xl mx-auto flex justify-between text-[10px] uppercase tracking-[0.15em] text-cream/40">
-          <span>Koleksi Wayang Sutarwin</span>
-          <Link to="/kontak" className="hover:text-gold transition-colors">Hubungi kami →</Link>
-        </div>
-      </footer>
+      <Footer />
     </>
   )
 }

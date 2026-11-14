@@ -1,3 +1,4 @@
+import AdminLoading from '../components/AdminLoading'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api, { BASE_URL } from '../lib/api'
@@ -632,7 +633,7 @@ export default function AdminDashboard() {
       <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-slate-100">
         {loading ? (
           <div className="py-12 text-center text-slate-400 text-xs">
-            Memuat data…
+            <AdminLoading />
           </div>
         ) : wayangList.length > 0 ? (
           <>

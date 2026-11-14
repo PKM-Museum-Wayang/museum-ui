@@ -1,3 +1,4 @@
+import AdminLoading from '../components/AdminLoading'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
@@ -131,7 +132,7 @@ export default function PesanKontakManage() {
       </select>
     </div>
     <div className="overflow-hidden rounded-xl bg-white shadow-sm">
-      {loading ? <div role="status" className="py-16 text-center text-slate-400">Memuat pesan…</div> : error ? <div className="py-12 text-center text-slate-400">Daftar pesan belum dapat ditampilkan.</div> : items.length === 0 ? <div className="py-16 text-center text-slate-400">{filter ? 'Tidak ada pesan untuk topik ini.' : 'Belum ada pesan kontak.'}</div> : <>
+      {loading ? <div className="py-16 text-center text-slate-400"><AdminLoading label="Memuat pesan..." /></div> : error ? <div className="py-12 text-center text-slate-400">Daftar pesan belum dapat ditampilkan.</div> : items.length === 0 ? <div className="py-16 text-center text-slate-400">{filter ? 'Tidak ada pesan untuk topik ini.' : 'Belum ada pesan kontak.'}</div> : <>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left">
             <thead><tr>{['Tanggal', 'Pengirim', 'Topik', 'Pesan', 'Aksi'].map(header => <th key={header} className="whitespace-nowrap border-b border-slate-200 bg-slate-50 px-5 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">{header}</th>)}</tr></thead>
@@ -161,7 +162,7 @@ export default function PesanKontakManage() {
           <button type="button" onClick={() => setSelectedId(null)} aria-label="Tutup detail pesan" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg></button>
         </div>
         <div className="p-6">
-          {detailLoading ? <p role="status" className="py-10 text-center text-slate-400">Memuat detail pesan…</p> : detailError ? <div role="alert" className="rounded-lg bg-red-50 p-4 text-red-800">{detailError} {expired ? <Link to="/admin/login" className="font-semibold underline">Login kembali</Link> : <button type="button" onClick={() => { setDetailLoading(true); setDetailError(''); setDetailRetry(value => value + 1) }} className="font-semibold underline">Coba lagi</button>}</div> : detail && <>
+          {detailLoading ? <p className="py-10 text-center text-slate-400"><AdminLoading label="Memuat detail pesan..." /></p> : detailError ? <div role="alert" className="rounded-lg bg-red-50 p-4 text-red-800">{detailError} {expired ? <Link to="/admin/login" className="font-semibold underline">Login kembali</Link> : <button type="button" onClick={() => { setDetailLoading(true); setDetailError(''); setDetailRetry(value => value + 1) }} className="font-semibold underline">Coba lagi</button>}</div> : detail && <>
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3"><span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">{labelTopik(detail.jenisTopik)}</span><span className="text-xs text-slate-400">{tanggal(detail.createdAt)}</span></div>
             <dl className="grid gap-5 sm:grid-cols-2">{[
               { label: 'Nama lengkap', value: detail.namaLengkap },

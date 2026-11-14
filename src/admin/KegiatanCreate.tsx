@@ -1,4 +1,5 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react'
+import AdminLoading from '../components/AdminLoading'
+import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import api from '../lib/api'
 
 interface KegiatanFormModalProps {
@@ -24,6 +25,8 @@ export default function KegiatanFormModal({ onClose, onSuccess }: KegiatanFormMo
   })
 
   const [file, setFile] = useState<File[]>([])
+  const [savedId, setSavedId] = useState<number | null>(null)
+  const kegiatanSaved = useRef(false)
   const [previewUrl, setPreviewUrl] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -65,7 +68,7 @@ export default function KegiatanFormModal({ onClose, onSuccess }: KegiatanFormMo
     // id admin ke key 'adminId' setelah berhasil login, kalau belum.
     const adminId = Number(sessionStorage.getItem('adminId'))
 
-    if (!adminId) {
+    if (!adminId && !savedId) {
       setError('ID admin tidak ditemukan. Silakan login ulang.')
       return
     }
@@ -74,7 +77,7 @@ export default function KegiatanFormModal({ onClose, onSuccess }: KegiatanFormMo
     try {
       const tanggalIso = new Date(`${form.tanggal}T${form.jam}`).toISOString()
 
-      const res = await api.post('/kegiatan', {
+      const res = savedId ? null : await api.post('/kegiatan', {
         nama: form.nama.trim(),
         deskripsi: form.deskripsi.trim() || undefined,
         tanggal: tanggalIso,
@@ -82,7 +85,14 @@ export default function KegiatanFormModal({ onClose, onSuccess }: KegiatanFormMo
         adminId,
       })
 
-      const kegiatanId = res.data?.data?.id
+      if (savedId) await api.patch(`/kegiatan/${savedId}`, {
+        nama: form.nama.trim(), deskripsi: form.deskripsi.trim() || undefined,
+        tanggal: tanggalIso, lokasi: form.lokasi.trim(),
+      })
+      const kegiatanId = savedId ?? res?.data?.data?.id
+      if (!kegiatanId) throw new Error('ID kegiatan tidak tersedia')
+      kegiatanSaved.current = true
+      setSavedId(kegiatanId)
 
       if (file.length > 0 && kegiatanId) {
         for (const f of file) {
@@ -91,12 +101,14 @@ export default function KegiatanFormModal({ onClose, onSuccess }: KegiatanFormMo
           await api.post(`/kegiatan/${kegiatanId}/gambar`, b, {
             headers: { 'Content-Type': 'multipart/form-data' }
           })
+          setFile(prev => prev.slice(1))
+          setPreviewUrl(prev => prev.slice(1))
         }
       }
 
       onSuccess()
     } catch {
-      setError('Gagal menyimpan kegiatan. Coba lagi.')
+      setError(kegiatanSaved.current ? 'Kegiatan sudah tersimpan, tetapi gambar gagal diunggah. Coba lagi untuk gambar yang tersisa, atau tutup dan lanjutkan lewat edit.' : 'Gagal menyimpan kegiatan. Coba lagi.')
     } finally {
       setSubmitting(false)
     }
@@ -238,7 +250,7 @@ export default function KegiatanFormModal({ onClose, onSuccess }: KegiatanFormMo
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              {submitting ? 'Menyimpan…' : 'Simpan Kegiatan'}
+              {submitting ? <AdminLoading label="Menyimpan..." /> : 'Simpan Kegiatan'}
             </button>
           </div>
         </form>
